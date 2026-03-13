@@ -166,9 +166,18 @@ async function sendToDashboard() {
   if (!extractedData) return;
 
   const btn = document.getElementById('btn-send');
+  const spinnerHtml = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>';
+
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:6px;"></span>Sende…';
+  btn.innerHTML = `${spinnerHtml}Daten werden gesendet…`;
   hideStatus();
+
+  // Nach kurzer Verzögerung auf "Analyse läuft..." umschalten (Claude braucht ~5 Sek.)
+  const analysisHint = setTimeout(() => {
+    if (btn.disabled) {
+      btn.innerHTML = `${spinnerHtml}Analyse läuft…`;
+    }
+  }, 1500);
 
   const apiUrl = await getApiUrl();
   const endpoint = `${apiUrl.replace(/\/$/, '')}/api/enrich`;
@@ -180,27 +189,40 @@ async function sendToDashboard() {
       body: JSON.stringify(extractedData),
     });
 
+    clearTimeout(analysisHint);
     const json = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       throw new Error(json.error || `HTTP ${res.status}`);
     }
 
-    // Show success state
-    const detail = document.getElementById('success-detail');
-    if (json.action === 'created') {
-      detail.textContent = 'Neues Objekt im Dashboard angelegt.';
-    } else if (json.action === 'updated') {
-      detail.textContent = 'Bestehendes Objekt im Dashboard aktualisiert.';
+    // Success-State befüllen
+    const isNew = json.action === 'created';
+
+    if (json.analyzed) {
+      document.getElementById('success-icon').textContent = '🎉';
+      document.getElementById('success-title').textContent = 'Analyse abgeschlossen!';
+      document.getElementById('success-detail').textContent =
+        isNew ? 'Neues Objekt analysiert und im Dashboard angelegt.' : 'Objekt aktualisiert und neu analysiert.';
+
+      // Fazit anzeigen wenn vorhanden
+      if (json.fazit) {
+        document.getElementById('success-fazit').textContent = json.fazit;
+        document.getElementById('success-fazit-block').style.display = 'block';
+      }
     } else {
-      detail.textContent = 'Objekt erfolgreich verarbeitet.';
+      document.getElementById('success-icon').textContent = '✅';
+      document.getElementById('success-title').textContent = 'Daten gespeichert!';
+      document.getElementById('success-detail').textContent =
+        isNew ? 'Neues Objekt im Dashboard angelegt.' : 'Bestehendes Objekt aktualisiert.';
     }
 
-    // Save dashboard URL for "open dashboard" button
+    // Dashboard-URL für "Öffnen"-Button speichern
     chrome.storage.session.set({ lastDashboardUrl: apiUrl });
 
     showState('state-success');
   } catch (err) {
+    clearTimeout(analysisHint);
     btn.disabled = false;
     btn.innerHTML = '<span>📤</span> An Dashboard senden';
     showStatus(`Fehler: ${err.message}`, 'error');

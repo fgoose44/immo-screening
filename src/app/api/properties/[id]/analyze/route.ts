@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase';
-import { analyzeExpose } from '@/lib/claude';
+import { runAnalysisAndSave } from '@/lib/analyze';
 
 export async function POST(
   _request: NextRequest,
@@ -9,10 +9,10 @@ export async function POST(
   const { id } = await params;
   const supabase = createServiceClient();
 
-  // Property laden — alle Felder die Claude übernehmen könnte
+  // Prüfen ob Property existiert und Exposé-Text vorhanden ist
   const { data: property, error: fetchError } = await supabase
     .from('properties')
-    .select('id, expose_text, status, baujahr, ist_miete_eur, energieklasse, heizungsart, aufzug, balkon')
+    .select('id, expose_text')
     .eq('id', id)
     .single();
 
@@ -28,61 +28,23 @@ export async function POST(
   }
 
   try {
-    // Claude API aufrufen
-    const result = await analyzeExpose(property.expose_text);
+    const outcome = await runAnalysisAndSave(id, supabase);
 
-    // AI-Bewertungsfelder immer übernehmen
-    const updates: Record<string, unknown> = {
-      status: 'analyzed',
-      ai_bewertung_lage: result.bewertung.lage,
-      ai_bewertung_mietsteigerung: result.bewertung.mietsteigerung,
-      ai_bewertung_steuer: result.bewertung.steuerlicher_hebel,
-      ai_bewertung_esg: result.bewertung.esg_substanz,
-      ai_bewertung_fazit: result.bewertung.fazit,
-    };
-
-    // Extrahierte Daten nur übernehmen wenn:
-    // a) Claude etwas extrahiert hat (nicht null), UND
-    // b) das Feld in der Datenbank noch leer ist (null/undefined)
-    const extracted = result.extrahierte_daten;
-
-    if (extracted.baujahr !== null && property.baujahr == null) {
-      updates.baujahr = extracted.baujahr;
-    }
-    if (extracted.ist_miete_eur !== null && property.ist_miete_eur == null) {
-      updates.ist_miete_eur = extracted.ist_miete_eur;
-    }
-    if (extracted.energieklasse !== null && property.energieklasse == null) {
-      updates.energieklasse = extracted.energieklasse;
-    }
-    if (extracted.heizungsart !== null && property.heizungsart == null) {
-      updates.heizungsart = extracted.heizungsart;
-    }
-    if (extracted.aufzug !== null && property.aufzug == null) {
-      updates.aufzug = extracted.aufzug;
-    }
-    if (extracted.balkon !== null && property.balkon == null) {
-      updates.balkon = extracted.balkon;
+    if (!outcome.success) {
+      return NextResponse.json({ error: outcome.error }, { status: 422 });
     }
 
-    const { data: updated, error: updateError } = await supabase
+    // Aktualisiertes Property zurückgeben
+    const { data: updated } = await supabase
       .from('properties')
-      .update(updates)
-      .eq('id', id)
       .select()
+      .eq('id', id)
       .single();
-
-    if (updateError) throw updateError;
-
-    // Rückmelden welche Felder Claude automatisch befüllt hat
-    const autoFilled = Object.keys(updates).filter(
-      (k) => !k.startsWith('ai_') && k !== 'status'
-    );
 
     return NextResponse.json({
       property: updated,
-      ai_result: result,
-      auto_filled: autoFilled,
+      ai_result: outcome.ai_result,
+      auto_filled: outcome.auto_filled,
     });
   } catch (error) {
     console.error('Analyze error:', error);

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase';
+import { runAnalysisAndSave } from '@/lib/analyze';
 
 // CORS-Helper: erlaubt Anfragen von Chrome Extensions und der eigenen Domain
 function corsHeaders(origin: string | null) {
@@ -23,7 +24,7 @@ export async function OPTIONS(request: NextRequest) {
   });
 }
 
-// Empfängt Daten von der Chrome Extension
+// Empfängt Daten von der Chrome Extension, speichert sie und startet Claude-Analyse
 export async function POST(request: NextRequest) {
   const origin = request.headers.get('origin');
 
@@ -54,28 +55,28 @@ export async function POST(request: NextRequest) {
       aufzug: body.aufzug ?? null,
       balkon: body.balkon ?? null,
       expose_text: body.expose_text ?? null,
-      // Basisdaten überschreiben falls mitgeliefert
       ...(body.kaufpreis_eur !== undefined && { kaufpreis_eur: body.kaufpreis_eur }),
       ...(body.wohnflaeche_qm !== undefined && { wohnflaeche_qm: body.wohnflaeche_qm }),
       ...(body.zimmer !== undefined && { zimmer: body.zimmer }),
       ...(body.title !== undefined && { title: body.title }),
     };
 
+    let propertyId: string;
+    let action: 'created' | 'updated';
+
     if (existing) {
-      // Update vorhandenes Objekt
+      // Update vorhandenes Objekt (Status bleibt — wird später von Analyse auf 'analyzed' gesetzt)
       const newStatus = existing.status === 'preview' ? 'enriched' : existing.status;
       const { data, error } = await supabase
         .from('properties')
         .update({ ...enrichData, status: newStatus })
         .eq('id', existing.id)
-        .select()
+        .select('id')
         .single();
 
       if (error) throw error;
-      return NextResponse.json(
-        { action: 'updated', property: data },
-        { headers: corsHeaders(origin) }
-      );
+      propertyId = data.id;
+      action = 'updated';
     } else {
       // Neues Objekt anlegen
       const { data, error } = await supabase
@@ -92,15 +93,38 @@ export async function POST(request: NextRequest) {
           status: 'enriched',
           ...enrichData,
         })
-        .select()
+        .select('id')
         .single();
 
       if (error) throw error;
-      return NextResponse.json(
-        { action: 'created', property: data },
-        { status: 201, headers: corsHeaders(origin) }
-      );
+      propertyId = data.id;
+      action = 'created';
     }
+
+    // ── Automatische Claude-Analyse (nur wenn Exposé-Text vorhanden) ──────────
+    let analysisOutcome = null;
+    if (body.expose_text) {
+      try {
+        analysisOutcome = await runAnalysisAndSave(propertyId, supabase);
+      } catch (analysisErr) {
+        // Analyse-Fehler sind nicht kritisch — Daten sind bereits gespeichert
+        console.error('Auto-Analyse fehlgeschlagen:', analysisErr);
+      }
+    }
+
+    return NextResponse.json(
+      {
+        action,
+        property_id: propertyId,
+        analyzed: analysisOutcome?.success ?? false,
+        fazit: analysisOutcome?.fazit ?? null,
+        auto_filled: analysisOutcome?.auto_filled ?? [],
+      },
+      {
+        status: action === 'created' ? 201 : 200,
+        headers: corsHeaders(origin),
+      }
+    );
   } catch (error) {
     console.error('POST /api/enrich error:', error);
     return NextResponse.json(
