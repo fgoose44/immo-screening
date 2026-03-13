@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack)",
+      "Bash(node --version)",
+      "Bash(npm --version)",
+      "Read(//Users/fabian/**)",
+      "Bash(curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh)",
+      "Bash(bash)",
+      "Bash(export NVM_DIR=\"$HOME/.nvm\")",
+      "Bash(. \"$NVM_DIR/nvm.sh\")",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --yes)",
+      "Read(//private/tmp/**)",
+      "Bash(npx create-next-app@latest immo-app --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --no-turbopack --yes)",
+      "Bash(cp -r /tmp/immo-app/. /Users/fabian/immo-screening/ --no-clobber)",
+      "Bash(rsync -a --exclude='.git' /tmp/immo-app/ /Users/fabian/immo-screening/)",
+      "Bash(npm install @supabase/supabase-js)",
+      "Bash(npm run build)",
+      "Bash(git init)",
+      "Bash(git add -A)"
+    ]
+  }
+}
