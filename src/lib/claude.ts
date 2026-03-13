@@ -9,6 +9,13 @@ REGELN:
 - Die Bewertung muss exakt 5 Aspekte haben, je eine prägnante Aussage (1-2 Sätze).
 - Antworte ausschließlich im vorgegebenen JSON-Format, keine Prosa drumherum.
 
+WICHTIG — Mietwert (ist_miete_eur):
+- Gib die Ist-Miete IMMER als monatlichen Kaltmietenwert in Euro zurück.
+- Wenn die Miete im Exposé als Jahreswert angegeben ist (z.B. "Mieteinnahmen 6.000 € p.a." oder "Jahresnettomiete 7.200 €"), teile den Wert durch 12 und gib den Monatswert zurück.
+- Beispiel: "Mieteinnahmen 6.000 € p.a." → ist_miete_eur: 500
+- Beispiel: "Kaltmiete 650 €/Monat" → ist_miete_eur: 650
+- Wenn unklar ob Monats- oder Jahreswert, wähle die Interpretation die wirtschaftlich plausibler ist (Monatsmieten für Wohnungen liegen typischerweise zwischen 300–2.000 €).
+
 Antworte im folgenden JSON-Format:
 
 {

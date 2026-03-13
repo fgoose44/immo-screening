@@ -9,10 +9,10 @@ export async function POST(
   const { id } = await params;
   const supabase = createServiceClient();
 
-  // Property laden
+  // Property laden — alle Felder die Claude übernehmen könnte
   const { data: property, error: fetchError } = await supabase
     .from('properties')
-    .select('id, expose_text, status')
+    .select('id, expose_text, status, baujahr, ist_miete_eur, energieklasse, heizungsart, aufzug, balkon')
     .eq('id', id)
     .single();
 
@@ -31,7 +31,7 @@ export async function POST(
     // Claude API aufrufen
     const result = await analyzeExpose(property.expose_text);
 
-    // Extrahierte Daten + Bewertung zusammenführen
+    // AI-Bewertungsfelder immer übernehmen
     const updates: Record<string, unknown> = {
       status: 'analyzed',
       ai_bewertung_lage: result.bewertung.lage,
@@ -41,14 +41,29 @@ export async function POST(
       ai_bewertung_fazit: result.bewertung.fazit,
     };
 
-    // Extrahierte Daten nur übernehmen wenn nicht schon vorhanden
+    // Extrahierte Daten nur übernehmen wenn:
+    // a) Claude etwas extrahiert hat (nicht null), UND
+    // b) das Feld in der Datenbank noch leer ist (null/undefined)
     const extracted = result.extrahierte_daten;
-    if (extracted.baujahr !== null) updates.baujahr = extracted.baujahr;
-    if (extracted.ist_miete_eur !== null) updates.ist_miete_eur = extracted.ist_miete_eur;
-    if (extracted.energieklasse !== null) updates.energieklasse = extracted.energieklasse;
-    if (extracted.heizungsart !== null) updates.heizungsart = extracted.heizungsart;
-    if (extracted.aufzug !== null) updates.aufzug = extracted.aufzug;
-    if (extracted.balkon !== null) updates.balkon = extracted.balkon;
+
+    if (extracted.baujahr !== null && property.baujahr == null) {
+      updates.baujahr = extracted.baujahr;
+    }
+    if (extracted.ist_miete_eur !== null && property.ist_miete_eur == null) {
+      updates.ist_miete_eur = extracted.ist_miete_eur;
+    }
+    if (extracted.energieklasse !== null && property.energieklasse == null) {
+      updates.energieklasse = extracted.energieklasse;
+    }
+    if (extracted.heizungsart !== null && property.heizungsart == null) {
+      updates.heizungsart = extracted.heizungsart;
+    }
+    if (extracted.aufzug !== null && property.aufzug == null) {
+      updates.aufzug = extracted.aufzug;
+    }
+    if (extracted.balkon !== null && property.balkon == null) {
+      updates.balkon = extracted.balkon;
+    }
 
     const { data: updated, error: updateError } = await supabase
       .from('properties')
@@ -59,9 +74,15 @@ export async function POST(
 
     if (updateError) throw updateError;
 
+    // Rückmelden welche Felder Claude automatisch befüllt hat
+    const autoFilled = Object.keys(updates).filter(
+      (k) => !k.startsWith('ai_') && k !== 'status'
+    );
+
     return NextResponse.json({
       property: updated,
       ai_result: result,
+      auto_filled: autoFilled,
     });
   } catch (error) {
     console.error('Analyze error:', error);
