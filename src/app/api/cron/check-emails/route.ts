@@ -7,12 +7,21 @@ import { parseImmoScoutEmail } from '@/lib/email-parser';
 
 const PRE_FILTER_MAX_EUR_QM = 2700;
 
-// Vercel ruft Cron-Jobs mit dem CRON_SECRET als Bearer-Token auf
+// Vercel ruft Cron-Jobs mit dem CRON_SECRET als Bearer-Token auf.
+// Für manuelle Browser-Tests wird auch ?secret=... als Query-Parameter akzeptiert.
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return true; // kein Secret gesetzt → lokal testen erlaubt
-  const auth = request.headers.get('authorization');
-  return auth === `Bearer ${secret}`;
+
+  // 1. Authorization-Header (wird von Vercel Cron automatisch gesetzt)
+  const authHeader = request.headers.get('authorization');
+  if (authHeader === `Bearer ${secret}`) return true;
+
+  // 2. Query-Parameter (für manuelle Browser-Tests: ?secret=...)
+  const querySecret = request.nextUrl.searchParams.get('secret');
+  if (querySecret === secret) return true;
+
+  return false;
 }
 
 export async function GET(request: NextRequest) {
