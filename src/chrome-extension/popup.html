@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ImmoScout Screener</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      color: #1f2937;
+      background: #f9fafb;
+      width: 340px;
+      min-height: 200px;
+    }
+
+    /* Header */
+    .header {
+      background: #7c3aed;
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-logo {
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: -0.3px;
+    }
+    .header-logo span {
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+      padding: 2px 6px;
+      margin-right: 6px;
+    }
+    .header-settings {
+      cursor: pointer;
+      opacity: 0.8;
+      font-size: 16px;
+      text-decoration: none;
+      color: white;
+    }
+    .header-settings:hover { opacity: 1; }
+
+    /* States */
+    .state { padding: 16px; display: none; }
+    .state.active { display: block; }
+
+    /* Loading */
+    #state-loading {
+      text-align: center;
+      padding: 32px 16px;
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #7c3aed;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Wrong page */
+    #state-wrong-page {
+      text-align: center;
+      padding: 24px 16px;
+      color: #6b7280;
+    }
+    #state-wrong-page .icon { font-size: 28px; margin-bottom: 8px; }
+
+    /* Data preview */
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .data-item {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .data-item.full {
+      grid-column: 1 / -1;
+    }
+    .data-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+    .data-value {
+      font-weight: 600;
+      color: #111827;
+      font-size: 13px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .data-value.missing {
+      color: #d1d5db;
+      font-weight: 400;
+      font-style: italic;
+    }
+
+    /* Title block */
+    .expose-title {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+    .expose-title .data-value {
+      white-space: normal;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* Tags */
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 12px;
+    }
+    .tag {
+      font-size: 11px;
+      padding: 3px 7px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+    .tag-yes { background: #d1fae5; color: #065f46; }
+    .tag-no  { background: #fee2e2; color: #991b1b; }
+    .tag-neutral { background: #f3f4f6; color: #6b7280; }
+
+    /* Expose preview */
+    .expose-preview {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      max-height: 72px;
+      overflow: hidden;
+      position: relative;
+    }
+    .expose-preview::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 24px;
+      background: linear-gradient(transparent, white);
+    }
+    .expose-preview p {
+      font-size: 11px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: #7c3aed; color: white; }
+    .btn-primary:hover:not(:disabled) { background: #6d28d9; }
+    .btn-secondary { background: #f3f4f6; color: #374151; margin-top: 6px; }
+    .btn-secondary:hover:not(:disabled) { background: #e5e7eb; }
+
+    /* Status messages */
+    .status-msg {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-top: 10px;
+      display: none;
+      line-height: 1.5;
+    }
+    .status-msg.show { display: block; }
+    .status-success { background: #d1fae5; color: #065f46; }
+    .status-error { background: #fee2e2; color: #991b1b; }
+    .status-info { background: #ede9fe; color: #5b21b6; }
+
+    /* Success state */
+    #state-success {
+      text-align: center;
+      padding: 24px 16px;
+    }
+    .success-icon { font-size: 36px; margin-bottom: 10px; }
+    .success-title { font-weight: 700; font-size: 15px; color: #065f46; margin-bottom: 4px; }
+    .success-sub { color: #6b7280; font-size: 12px; }
+
+    /* Section label */
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-logo">
+      <span>IS</span> Screener
+    </div>
+    <a class="header-settings" id="btn-settings" title="Einstellungen">⚙</a>
+  </div>
+
+  <!-- Loading -->
+  <div class="state active" id="state-loading">
+    <div class="spinner"></div>
+    <p style="color:#6b7280;">Daten werden extrahiert…</p>
+  </div>
+
+  <!-- Wrong page -->
+  <div class="state" id="state-wrong-page">
+    <div class="icon">🏠</div>
+    <p style="font-weight:600; margin-bottom:6px;">Kein Exposé geöffnet</p>
+    <p style="font-size:12px;">Öffne ein Exposé auf ImmoScout24 und klicke dann erneut auf das Extension-Icon.</p>
+  </div>
+
+  <!-- Data preview + send -->
+  <div class="state" id="state-data">
+    <div class="section-label">Extrahierte Daten</div>
+
+    <div class="expose-title" id="expose-title-block">
+      <div class="data-label">Titel</div>
+      <div class="data-value" id="val-title">—</div>
+    </div>
+
+    <div class="data-grid">
+      <div class="data-item">
+        <div class="data-label">Kaufpreis</div>
+        <div class="data-value" id="val-kaufpreis">—</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label">€/m²</div>
+        <div class="data-value" id="val-eurqm">—</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label">Wohnfläche</div>
+        <div class="data-value" id="val-flaeche">—</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label">Zimmer</div>
+        <div class="data-value" id="val-zimmer">—</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label">Baujahr</div>
+        <div class="data-value" id="val-baujahr">—</div>
+      </div>
+      <div class="data-item">
+        <div class="data-label">Ist-Miete</div>
+        <div class="data-value" id="val-miete">—</div>
+      </div>
+    </div>
+
+    <div class="tags" id="tags-container"></div>
+
+    <div id="expose-preview-block" style="display:none;">
+      <div class="section-label">Beschreibung (Vorschau)</div>
+      <div class="expose-preview">
+        <p id="val-expose-preview"></p>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" id="btn-send">
+      <span>📤</span> An Dashboard senden
+    </button>
+    <div class="status-msg" id="status-msg"></div>
+  </div>
+
+  <!-- Success -->
+  <div class="state" id="state-success">
+    <div class="success-icon">✅</div>
+    <div class="success-title">Erfolgreich übertragen!</div>
+    <div class="success-sub" id="success-detail">Das Objekt wurde im Dashboard angelegt.</div>
+    <button class="btn btn-secondary" id="btn-open-dashboard" style="margin-top:16px;">Dashboard öffnen →</button>
+    <button class="btn btn-secondary" id="btn-back">Zurück</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
