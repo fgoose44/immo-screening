@@ -1,27 +1,31 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { Property, PropertyStatus } from '@/lib/types';
+import type { Property, PropertyStatus, SortField } from '@/lib/types';
 import StatsCards from './StatsCards';
 import PropertyTable from './PropertyTable';
-import FilterBar from './FilterBar';
+import FilterBar, { type FilterState } from './FilterBar';
+
+const DEFAULT_FILTERS: FilterState = {
+  status: 'all',
+  stadtteil: '',
+  maxEurQm: '',
+  minRendite: '',
+  sortField: 'created_at',
+  sortDir: 'desc',
+};
 
 export default function Dashboard() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<PropertyStatus | 'all'>('all');
-  const [selectedStadtteil, setSelectedStadtteil] = useState('');
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
 
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const params = new URLSearchParams();
-      if (selectedStatus !== 'all') params.set('status', selectedStatus);
-      if (selectedStadtteil) params.set('stadtteil', selectedStadtteil);
-
-      const res = await fetch(`/api/properties?${params}`);
+      const res = await fetch('/api/properties');
       if (!res.ok) throw new Error('Fehler beim Laden der Objekte');
       const data = await res.json();
       setProperties(data);
@@ -30,32 +34,38 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [selectedStatus, selectedStadtteil]);
+  }, []);
 
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
 
-  // Stadtteile für Filter-Dropdown ableiten
+  // Client-seitiges Filtern + Sortieren
+  const filtered = properties.filter((p) => {
+    if (filters.status !== 'all' && p.status !== filters.status) return false;
+    if (filters.stadtteil && p.stadtteil !== filters.stadtteil) return false;
+    if (filters.maxEurQm && p.eur_pro_qm !== null && p.eur_pro_qm > parseFloat(filters.maxEurQm)) return false;
+    if (filters.minRendite && (p.rendite_ist === null || p.rendite_ist < parseFloat(filters.minRendite) / 100)) return false;
+    return true;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    const aVal = a[filters.sortField as keyof Property] ?? '';
+    const bVal = b[filters.sortField as keyof Property] ?? '';
+    const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    return filters.sortDir === 'asc' ? cmp : -cmp;
+  });
+
+  // Stadtteile für Dropdown
   const stadtteile = Array.from(
     new Set(properties.map((p) => p.stadtteil).filter(Boolean) as string[])
   ).sort();
 
-  // Für die Statistik-Karten immer alle Properties (ungefiltert)
-  const [allProperties, setAllProperties] = useState<Property[]>([]);
-  useEffect(() => {
-    fetch('/api/properties')
-      .then((r) => r.json())
-      .then(setAllProperties)
-      .catch(() => {});
-  }, []);
-
-  // Zwei Bereiche: Vorschau + Angereichert oben, Analysiert unten
-  const topProperties = properties.filter(
-    (p) => p.status === 'preview' || p.status === 'enriched'
-  );
-  const analyzedProperties = properties.filter((p) => p.status === 'analyzed');
-  const skippedProperties = properties.filter((p) => p.status === 'skipped');
+  // Gruppen aus gefilterter Liste
+  const topProps = sorted.filter((p) => p.status === 'preview' || p.status === 'enriched');
+  const analyzedProps = sorted.filter((p) => p.status === 'analyzed');
+  const skippedProps = sorted.filter((p) => p.status === 'skipped');
+  const showSingleGroup = filters.status !== 'all';
 
   if (loading && properties.length === 0) {
     return (
@@ -91,46 +101,46 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <StatsCards properties={allProperties.length > 0 ? allProperties : properties} />
+      <StatsCards properties={properties} />
 
       <FilterBar
         stadtteile={stadtteile}
-        selectedStatus={selectedStatus}
-        selectedStadtteil={selectedStadtteil}
-        onStatusChange={setSelectedStatus}
-        onStadtteilChange={setSelectedStadtteil}
+        filters={filters}
+        onChange={setFilters}
       />
 
-      {selectedStatus === 'all' || selectedStatus === 'preview' || selectedStatus === 'enriched' ? (
+      {/* Einzel-Status: alles in einer Tabelle */}
+      {showSingleGroup ? (
         <PropertyTable
-          properties={
-            selectedStatus === 'all'
-              ? topProperties
-              : properties.filter((p) => p.status === selectedStatus)
+          properties={sorted}
+          title={
+            filters.status === 'preview' ? 'Vorschau' :
+            filters.status === 'enriched' ? 'Angereichert' :
+            filters.status === 'analyzed' ? 'Analysiert' : 'Übersprungen'
           }
-          title="Vorschau & Angereichert"
-          emptyMessage="Keine Objekte in dieser Kategorie."
+          emptyMessage="Keine Objekte gefunden."
         />
-      ) : null}
-
-      {(selectedStatus === 'all' || selectedStatus === 'analyzed') && (
-        <PropertyTable
-          properties={selectedStatus === 'all' ? analyzedProperties : properties.filter((p) => p.status === 'analyzed')}
-          title="Analysiert"
-          emptyMessage="Noch keine analysierten Objekte."
-        />
-      )}
-
-      {(selectedStatus === 'all' || selectedStatus === 'skipped') && skippedProperties.length > 0 && (
-        <details className="mt-4">
-          <summary className="text-sm text-gray-400 cursor-pointer hover:text-gray-600 mb-3">
-            Übersprungene Objekte ({skippedProperties.length})
-          </summary>
+      ) : (
+        <>
           <PropertyTable
-            properties={selectedStatus === 'all' ? skippedProperties : properties.filter((p) => p.status === 'skipped')}
-            title="Übersprungen"
+            properties={topProps}
+            title="Vorschau & Angereichert"
+            emptyMessage="Keine Objekte in dieser Kategorie."
           />
-        </details>
+          <PropertyTable
+            properties={analyzedProps}
+            title="Analysiert"
+            emptyMessage="Noch keine analysierten Objekte."
+          />
+          {skippedProps.length > 0 && (
+            <details className="mt-2">
+              <summary className="text-sm text-gray-400 cursor-pointer hover:text-gray-600 mb-3 select-none">
+                Übersprungene Objekte ({skippedProps.length})
+              </summary>
+              <PropertyTable properties={skippedProps} title="Übersprungen" />
+            </details>
+          )}
+        </>
       )}
 
       {properties.length === 0 && !loading && (

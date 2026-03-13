@@ -1,13 +1,20 @@
 'use client';
 
-import type { PropertyStatus } from '@/lib/types';
+import type { PropertyStatus, SortField, SortDirection } from '@/lib/types';
+
+export interface FilterState {
+  status: PropertyStatus | 'all';
+  stadtteil: string;
+  maxEurQm: string;
+  minRendite: string;
+  sortField: SortField;
+  sortDir: SortDirection;
+}
 
 interface FilterBarProps {
   stadtteile: string[];
-  selectedStatus: PropertyStatus | 'all';
-  selectedStadtteil: string;
-  onStatusChange: (status: PropertyStatus | 'all') => void;
-  onStadtteilChange: (stadtteil: string) => void;
+  filters: FilterState;
+  onChange: (filters: FilterState) => void;
 }
 
 const STATUS_OPTIONS: { value: PropertyStatus | 'all'; label: string }[] = [
@@ -18,53 +25,117 @@ const STATUS_OPTIONS: { value: PropertyStatus | 'all'; label: string }[] = [
   { value: 'skipped', label: 'Übersprungen' },
 ];
 
-export default function FilterBar({
-  stadtteile,
-  selectedStatus,
-  selectedStadtteil,
-  onStatusChange,
-  onStadtteilChange,
-}: FilterBarProps) {
-  return (
-    <div className="flex flex-wrap gap-3 mb-6 items-center">
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status:</span>
-        <div className="flex gap-1">
-          {STATUS_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => onStatusChange(opt.value)}
-              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                selectedStatus === opt.value
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
+const SORT_OPTIONS: { value: SortField; label: string }[] = [
+  { value: 'created_at', label: 'Datum' },
+  { value: 'kaufpreis_eur', label: 'Kaufpreis' },
+  { value: 'eur_pro_qm', label: '€/m²' },
+  { value: 'rendite_ist', label: 'Rendite' },
+  { value: 'cf_nach_steuer_4pct', label: 'Cashflow' },
+  { value: 'stadtteil', label: 'Stadtteil' },
+];
 
-      {stadtteile.length > 0 && (
+const selectClass =
+  'text-xs border border-gray-200 rounded px-2 py-1.5 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-purple-400';
+
+export default function FilterBar({ stadtteile, filters, onChange }: FilterBarProps) {
+  const set = (patch: Partial<FilterState>) => onChange({ ...filters, ...patch });
+
+  return (
+    <div className="bg-white border border-gray-100 rounded-lg px-4 py-3 mb-6 shadow-sm">
+      <div className="flex flex-wrap gap-x-6 gap-y-3 items-center">
+        {/* Status-Buttons */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-            Stadtteil:
+          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+            Status
+          </span>
+          <div className="flex gap-1">
+            {STATUS_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => set({ status: opt.value })}
+                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                  filters.status === opt.value
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Stadtteil */}
+        {stadtteile.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+              Stadtteil
+            </span>
+            <select
+              value={filters.stadtteil}
+              onChange={(e) => set({ stadtteil: e.target.value })}
+              className={selectClass}
+            >
+              <option value="">Alle</option>
+              {stadtteile.map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Max €/m² */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+            Max €/m²
+          </span>
+          <input
+            type="number"
+            placeholder="z. B. 2700"
+            value={filters.maxEurQm}
+            onChange={(e) => set({ maxEurQm: e.target.value })}
+            className={`${selectClass} w-24`}
+          />
+        </div>
+
+        {/* Min Rendite */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+            Min Rendite %
+          </span>
+          <input
+            type="number"
+            placeholder="z. B. 4"
+            value={filters.minRendite}
+            onChange={(e) => set({ minRendite: e.target.value })}
+            className={`${selectClass} w-20`}
+            step="0.1"
+          />
+        </div>
+
+        {/* Sortierung */}
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+            Sortierung
           </span>
           <select
-            value={selectedStadtteil}
-            onChange={(e) => onStadtteilChange(e.target.value)}
-            className="text-xs border border-gray-200 rounded px-2 py-1 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-purple-400"
+            value={filters.sortField}
+            onChange={(e) => set({ sortField: e.target.value as SortField })}
+            className={selectClass}
           >
-            <option value="">Alle Stadtteile</option>
-            {stadtteile.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
+          <button
+            onClick={() => set({ sortDir: filters.sortDir === 'asc' ? 'desc' : 'asc' })}
+            className="px-2 py-1.5 text-xs border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-50"
+            title={filters.sortDir === 'asc' ? 'Aufsteigend' : 'Absteigend'}
+          >
+            {filters.sortDir === 'asc' ? '↑' : '↓'}
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
