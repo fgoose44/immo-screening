@@ -83,10 +83,11 @@ export async function GET(request: NextRequest) {
 
     const lock = await client.getMailboxLock('INBOX');
     try {
-      // Datumbasierte Suche — unabhängig vom Gelesen-Status
+      // Nur nach Datum filtern — Absender-Check erfolgt nach dem Parsen im Code.
+      // Kombination since+from ist auf GMX-IMAP unzuverlässig.
       // search() gibt false | number[] zurück — sicher normalisieren
       const searchResult = await client.search(
-        { since: sinceDate, from: 'immobilienscout24' },
+        { since: sinceDate },
         { uid: true }
       );
       const uids: number[] = Array.isArray(searchResult) ? searchResult : [];
@@ -114,9 +115,10 @@ export async function GET(request: NextRequest) {
             simpleParser as (src: Buffer) => Promise<ParsedMail>
           )(source);
 
-          // Absender prüfen
+          // Absender prüfen — matcht auf "immobilienscout24.de" im From-Feld
+          // (z.B. "myscout@immobilienscout24.de" oder "noreply@immobilienscout24.de")
           const from = parsed.from?.text?.toLowerCase() ?? '';
-          if (!from.includes('immobilienscout24')) continue;
+          if (!from.includes('immobilienscout24.de')) continue;
 
           // HTML-Inhalt extrahieren
           const html = typeof parsed.html === 'string' ? parsed.html : (parsed.textAsHtml ?? '');
