@@ -6,6 +6,8 @@ import { createServiceClient } from '@/lib/supabase';
 import { parseImmoScoutEmail } from '@/lib/email-parser';
 
 const PRE_FILTER_MAX_EUR_QM = 2700;
+// Beim allerersten Lauf: so weit zurückschauen
+const FIRST_RUN_LOOKBACK_DAYS = 7;
 
 // Vercel ruft Cron-Jobs mit dem CRON_SECRET als Bearer-Token auf.
 // Für manuelle Browser-Tests wird auch ?secret=... als Query-Parameter akzeptiert.
@@ -42,13 +44,31 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const supabase = createServiceClient();
+
   const stats = {
     emails_checked: 0,
     properties_created: 0,
     properties_skipped_prefilter: 0,
     properties_duplicate: 0,
+    since: '',
     errors: [] as string[],
   };
+
+  // ── Letzten Check-Zeitpunkt aus der DB laden ────────────────────────────────
+  const { data: lastCheckSetting } = await supabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'last_email_check')
+    .maybeSingle();
+
+  // Beim ersten Lauf: FIRST_RUN_LOOKBACK_DAYS Tage zurückschauen
+  // Danach: ab dem letzten erfolgreichen Check suchen
+  const sinceDate = lastCheckSetting?.value
+    ? new Date(lastCheckSetting.value as string)
+    : new Date(Date.now() - FIRST_RUN_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
+
+  stats.since = sinceDate.toISOString();
 
   const client = new ImapFlow({
     host: imapHost,
@@ -63,19 +83,19 @@ export async function GET(request: NextRequest) {
 
     const lock = await client.getMailboxLock('INBOX');
     try {
-      // Ungelesene E-Mails von ImmoScout24 suchen
+      // Datumbasierte Suche — unabhängig vom Gelesen-Status
       // search() gibt false | number[] zurück — sicher normalisieren
       const searchResult = await client.search(
-        { seen: false, from: 'immobilienscout24' },
+        { since: sinceDate, from: 'immobilienscout24' },
         { uid: true }
       );
       const uids: number[] = Array.isArray(searchResult) ? searchResult : [];
 
       if (uids.length === 0) {
+        // Auch bei 0 E-Mails den Timestamp aktualisieren
+        await updateLastCheck(supabase);
         return NextResponse.json({ message: 'Keine neuen ImmoScout-E-Mails', ...stats });
       }
-
-      const supabase = createServiceClient();
 
       // Jede E-Mail verarbeiten
       for await (const message of client.fetch(
@@ -86,35 +106,28 @@ export async function GET(request: NextRequest) {
         try {
           stats.emails_checked++;
 
-          // Source prüfen (wird durch { source: true } immer gesetzt, aber TypeScript prüft)
           const source = message.source;
           if (!source) continue;
 
-          // E-Mail parsen — explizite Typisierung um Overload-Ambiguität zu vermeiden
+          // E-Mail parsen
           const parsed: ParsedMail = await (
             simpleParser as (src: Buffer) => Promise<ParsedMail>
           )(source);
 
-          // Absender nochmals prüfen (Sicherheitsnetz)
+          // Absender prüfen
           const from = parsed.from?.text?.toLowerCase() ?? '';
-          if (!from.includes('immobilienscout24')) {
-            await client.messageFlagsAdd(String(message.uid), ['\\Seen'], { uid: true });
-            continue;
-          }
+          if (!from.includes('immobilienscout24')) continue;
 
           // HTML-Inhalt extrahieren
           const html = typeof parsed.html === 'string' ? parsed.html : (parsed.textAsHtml ?? '');
-          if (!html) {
-            await client.messageFlagsAdd(String(message.uid), ['\\Seen'], { uid: true });
-            continue;
-          }
+          if (!html) continue;
 
           // Inserate aus E-Mail-HTML parsen
           const properties = parseImmoScoutEmail(html);
 
           for (const prop of properties) {
             try {
-              // Duplikat-Check über ImmoScout-URL
+              // Duplikat-Check über ImmoScout-URL (Sicherheitsnetz für Mehrfach-Verarbeitung)
               const { data: existing } = await supabase
                 .from('properties')
                 .select('id')
@@ -148,9 +161,6 @@ export async function GET(request: NextRequest) {
               stats.errors.push(`Property ${prop.immoscout_url}: ${msg}`);
             }
           }
-
-          // E-Mail als gelesen markieren
-          await client.messageFlagsAdd(String(message.uid), ['\\Seen'], { uid: true });
         } catch (emailErr) {
           const msg = emailErr instanceof Error ? emailErr.message : String(emailErr);
           stats.errors.push(`E-Mail-Verarbeitung: ${msg}`);
@@ -162,11 +172,24 @@ export async function GET(request: NextRequest) {
 
     await client.logout();
 
+    // ── Letzten Check-Zeitpunkt speichern (nur bei Erfolg) ──────────────────
+    await updateLastCheck(supabase);
+
     return NextResponse.json({ success: true, ...stats });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error('check-emails Fehler:', err);
+    // Kein updateLastCheck bei Fehler → nächster Lauf wiederholt ab sinceDate
     try { await client.logout(); } catch { /* ignore */ }
     return NextResponse.json({ error: msg, ...stats }, { status: 500 });
   }
+}
+
+async function updateLastCheck(supabase: ReturnType<typeof createServiceClient>) {
+  await supabase
+    .from('app_settings')
+    .upsert(
+      { key: 'last_email_check', value: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
 }

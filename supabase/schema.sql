@@ -112,6 +112,14 @@ CREATE TABLE expose_files (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Tabelle: app_settings (Key-Value-Store für interne Einstellungen)
+-- Wird u.a. für last_email_check des Cron-Jobs verwendet
+CREATE TABLE app_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- Row Level Security aktivieren (optional, für spätere Auth)
 -- ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE expose_files ENABLE ROW LEVEL SECURITY;
