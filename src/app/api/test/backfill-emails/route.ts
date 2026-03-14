@@ -26,10 +26,12 @@ export async function GET() {
   const supabase = createServiceClient();
 
   const stats = {
-    emails_checked: 0,
-    properties_created: 0,
+    uids_found: 0,            // UIDs vom IMAP-Search zurückgegeben
+    emails_checked: 0,        // E-Mails die vom From-Filter durchgelassen wurden
+    properties_parsed: 0,     // Inserate die der HTML-Parser gefunden hat
+    properties_created: 0,    // Erfolgreich in DB geschrieben
     properties_skipped_prefilter: 0,
-    properties_duplicate: 0,
+    properties_duplicate: 0,  // Bereits in DB vorhanden (immoscout_url UNIQUE)
     since: '',
     errors: [] as string[],
   };
@@ -58,6 +60,7 @@ export async function GET() {
         { uid: true }
       );
       const uids: number[] = Array.isArray(searchResult) ? searchResult : [];
+      stats.uids_found = uids.length;
 
       if (uids.length === 0) {
         return NextResponse.json({
@@ -94,6 +97,7 @@ export async function GET() {
 
           // Inserate aus E-Mail-HTML parsen
           const properties = parseImmoScoutEmail(html);
+          stats.properties_parsed += properties.length;
 
           for (const prop of properties) {
             try {

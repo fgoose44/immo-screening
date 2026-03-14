@@ -86,9 +86,6 @@ export function parseImmoScoutEmail(html: string): ParsedProperty[] {
     if (seenUrls.has(immoscoutUrl)) return;
     seenUrls.add(immoscoutUrl);
 
-    // ── Schritt 2: Titel aus Link-Text ──────────────────────────────────────
-    const title = $(linkEl).text().replace(/\s+/g, ' ').trim() || null;
-
     // ── Schritt 3: Container hochlaufen bis bold-TDs gefunden ───────────────
     // Suche nach dem Block, der die Preis/m²/Zimmer-TDs enthält
     let container = $(linkEl).parent();
@@ -105,7 +102,22 @@ export function parseImmoScoutEmail(html: string): ParsedProperty[] {
       container = parent;
     }
 
-    // ── Schritt 4: Preis, Fläche, Zimmer aus bold-TDs (font-size:20px) ─────
+    // ── Schritt 4: Titel aus dem Container ──────────────────────────────────
+    // Pro Inserat gibt es zwei Links zur gleichen expose-URL:
+    //   1. Bild-Link: <a href="..."><img ...></a>          → kein Text
+    //   2. Titel-Link: <a href="..." title="Zum Inserat">Schöne 2-Raumwohnung...</a>
+    // Wir suchen im Container nach einem Link mit tatsächlichem Text-Inhalt.
+    let title: string | null = null;
+    container.find(`a[href*="/expose/${exposeId}"]`).each((_, a) => {
+      if (title) return;
+      const t = $(a).text().replace(/\s+/g, ' ').trim();
+      // Mindest-Länge 10 Zeichen, kein reiner URL-Text
+      if (t.length >= 10 && !t.startsWith('http') && !t.startsWith('>')) {
+        title = t.substring(0, 200);
+      }
+    });
+
+    // ── Schritt 6: Preis, Fläche, Zimmer aus bold-TDs (font-size:20px) ─────
     const boldValues: string[] = [];
     container.find('td').each((_, el) => {
       const style = ($(el).attr('style') ?? '').replace(/\s/g, '');
@@ -119,7 +131,7 @@ export function parseImmoScoutEmail(html: string): ParsedProperty[] {
     const wohnflaeche_qm = boldValues.length >= 2 ? parseArea(boldValues[1]) : null;
     const zimmer = boldValues.length >= 3 ? parseRooms(boldValues[2]) : null;
 
-    // ── Schritt 5: Adresse aus TD mit font-size:14px ────────────────────────
+    // ── Schritt 7: Adresse aus TD mit font-size:14px ────────────────────────
     let address: string | null = null;
     let stadtteil: string | null = null;
 
@@ -136,7 +148,7 @@ export function parseImmoScoutEmail(html: string): ParsedProperty[] {
       }
     });
 
-    // ── Schritt 6: Thumbnail von pictures.immobilienscout24.de ──────────────
+    // ── Schritt 8: Thumbnail von pictures.immobilienscout24.de ──────────────
     let thumbnailUrl: string | null = null;
 
     container.find('img').each((_, img) => {
