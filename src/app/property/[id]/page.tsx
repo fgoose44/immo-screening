@@ -6,7 +6,9 @@ import StatusBadge from '@/components/StatusBadge';
 import EnrichForm from '@/components/EnrichForm';
 import KennzahlenPanel from '@/components/KennzahlenPanel';
 import AiReview from '@/components/AiReview';
+import PdfDownloadButton from '@/components/PdfDownloadButton';
 import { formatEur, formatQm } from '@/lib/calculations';
+import { getPdfSignedUrl } from '@/lib/pdf-generator';
 
 async function getProperty(id: string): Promise<Property | null> {
   try {
@@ -29,7 +31,11 @@ export default async function PropertyPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const property = await getProperty(id);
+  const supabase = createServiceClient();
+  const [property, pdfUrl] = await Promise.all([
+    getProperty(id),
+    getPdfSignedUrl(id, supabase),
+  ]);
 
   if (!property) notFound();
 
@@ -65,13 +71,19 @@ export default async function PropertyPage({
               .join(' · ')}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-2xl font-bold text-gray-900">
-            {property.kaufpreis_eur ? formatEur(property.kaufpreis_eur) : '—'}
-          </p>
-          {property.eur_pro_qm && (
-            <p className="text-sm text-gray-500">{formatEur(property.eur_pro_qm)} / m²</p>
-          )}
+
+        {/* Rechts: Preis + PDF-Button */}
+        <div className="flex flex-col items-end gap-2">
+          <div className="text-right">
+            <p className="text-2xl font-bold text-gray-900">
+              {property.kaufpreis_eur ? formatEur(property.kaufpreis_eur) : '—'}
+            </p>
+            {property.eur_pro_qm && (
+              <p className="text-sm text-gray-500">{formatEur(property.eur_pro_qm)} / m²</p>
+            )}
+          </div>
+          {/* PDF-Download-Button (Client Component) */}
+          <PdfDownloadButton propertyId={property.id} initialPdfUrl={pdfUrl} />
         </div>
       </div>
 

@@ -1,12 +1,14 @@
 import { analyzeExpose } from './claude';
 import type { createServiceClient } from './supabase';
-import type { AiAnalysisResult } from './types';
+import type { AiAnalysisResult, Property } from './types';
+import { generateAndUploadPdf } from './pdf-generator';
 
 export interface AnalysisOutcome {
   success: boolean;
   ai_result?: AiAnalysisResult;
   auto_filled?: string[];
   fazit?: string;
+  pdf_generated?: boolean;
   error?: string;
 }
 
@@ -18,6 +20,7 @@ export interface AnalysisOutcome {
  * - Ruft Claude API auf
  * - Schreibt AI-Bewertung + extrahierte Daten (nur leere Felder) zurück
  * - Setzt Status auf 'analyzed'
+ * - Generiert automatisch ein PDF und lädt es in Supabase Storage hoch
  */
 export async function runAnalysisAndSave(
   propertyId: string,
@@ -77,10 +80,30 @@ export async function runAnalysisAndSave(
     (k) => !k.startsWith('ai_') && k !== 'status'
   );
 
+  // ── PDF automatisch generieren ─────────────────────────────────────────────
+  // Das vollständige Property (inkl. Generated Columns und AI-Felder) laden
+  let pdfGenerated = false;
+  try {
+    const { data: fullProperty } = await supabase
+      .from('properties')
+      .select('*')
+      .eq('id', propertyId)
+      .single();
+
+    if (fullProperty) {
+      await generateAndUploadPdf(fullProperty as Property, supabase);
+      pdfGenerated = true;
+    }
+  } catch (pdfErr) {
+    // PDF-Fehler sind nicht kritisch — Analyse war trotzdem erfolgreich
+    console.error('PDF-Generierung fehlgeschlagen (nicht kritisch):', pdfErr);
+  }
+
   return {
     success: true,
     ai_result: result,
     auto_filled: autoFilled,
     fazit: result.bewertung.fazit,
+    pdf_generated: pdfGenerated,
   };
 }

@@ -123,3 +123,20 @@ CREATE TABLE app_settings (
 -- Row Level Security aktivieren (optional, für spätere Auth)
 -- ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE expose_files ENABLE ROW LEVEL SECURITY;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Supabase Storage: Bucket "exposes" für PDF-Exposés
+-- ─────────────────────────────────────────────────────────────────────────────
+-- Option A: Im Supabase Dashboard anlegen
+--   Storage → New bucket → Name: "exposes" → Private (nicht öffentlich)
+--
+-- Option B: Per SQL im Supabase SQL Editor ausführen
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('exposes', 'exposes', false)
+ON CONFLICT (id) DO NOTHING;
+
+-- Wichtig: UNIQUE-Constraint auf expose_files für upsert
+-- (property_id, file_type) muss eindeutig sein
+ALTER TABLE expose_files
+  ADD CONSTRAINT expose_files_property_file_type_unique
+  UNIQUE (property_id, file_type);

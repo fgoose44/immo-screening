@@ -70,7 +70,13 @@
       "Bash(git add src/lib/email-parser.ts src/app/api/test/backfill-emails/route.ts)",
       "Bash(git -C /Users/fabian/immo-screening add -A)",
       "Bash(git -C /Users/fabian/immo-screening commit -m \"chore: Test-Routen entfernt \\(/api/test/*\\)\")",
-      "Bash(git -C /Users/fabian/immo-screening push)"
+      "Bash(git -C /Users/fabian/immo-screening push)",
+      "Bash(npm install @react-pdf/renderer)",
+      "Bash(export PATH=\"/Users/fabian/.nvm/versions/node/v20.20.1/bin:$PATH\")",
+      "Bash(/Users/fabian/.nvm/versions/node/v20.20.1/bin/npm install @react-pdf/renderer)",
+      "Bash(PATH=\"/Users/fabian/.nvm/versions/node/v20.20.1/bin:$PATH\" npm install @react-pdf/renderer)",
+      "Bash(PATH=\"/Users/fabian/.nvm/versions/node/v20.20.1/bin:$PATH\" npm install @react-pdf/renderer --prefix /Users/fabian/immo-screening)",
+      "Bash(PATH=\"/Users/fabian/.nvm/versions/node/v20.20.1/bin:$PATH\" npx tsc --noEmit)"
     ]
   }
 }
