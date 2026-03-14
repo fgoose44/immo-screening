@@ -414,7 +414,7 @@ function PropertyPDF({ property, generatedAt }: { property: Property; generatedA
             {/* Annahmen-Hinweis */}
             <View style={{ marginTop: 6, padding: 6, backgroundColor: '#FEF3C7', borderRadius: 4 }}>
               <Text style={{ fontSize: 6.5, color: '#92400E', lineHeight: 1.4 }}>
-                Annahmen: 100% Finanzierung, 6% Zins p.a. (tilgungsfrei),{'\n'}
+                Annahmen: 100% Finanzierung, 4% Zins + 2% Tilgung p.a. (6% gesamt),{'\n'}
                 Hausgeld 1,50 €/m², Steuersatz 42%, Gebäudeanteil 80%
               </Text>
             </View>

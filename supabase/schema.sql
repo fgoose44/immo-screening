@@ -52,7 +52,8 @@ CREATE TABLE properties (
   ) STORED,
 
   -- Cashflow Berechnungen (monatlich)
-  -- Annahmen: 100% Finanzierung, 6% Zins (tilgungsfrei), Hausgeld 1,50 €/m²
+  -- Annahmen: 100% Finanzierung, 4% Zins + 2% Tilgung = 6% gesamt, Hausgeld 1,50 €/m²
+  -- Hinweis: 0.06 = Zins (0.04) + Tilgung (0.02); für ZvE nur Zinsen (0.04) absetzbar
   cf_vor_steuer NUMERIC(8,2) GENERATED ALWAYS AS (
     CASE WHEN ist_miete_eur IS NOT NULL AND kaufpreis_eur IS NOT NULL AND wohnflaeche_qm IS NOT NULL
     THEN ist_miete_eur - (kaufpreis_eur * 0.06 / 12) - (wohnflaeche_qm * 1.5)
@@ -60,6 +61,7 @@ CREATE TABLE properties (
   ) STORED,
 
   -- CF nach Steuer mit 2% AfA (Steuersatz 42%)
+  -- ZvE = Mieteinnahmen - absetzbare Zinsen (4%) - Hausgeld - AfA (Tilgung 2% ist nicht absetzbar)
   cf_nach_steuer_2pct NUMERIC(8,2) GENERATED ALWAYS AS (
     CASE WHEN ist_miete_eur IS NOT NULL AND kaufpreis_eur IS NOT NULL AND wohnflaeche_qm IS NOT NULL
     THEN (ist_miete_eur - (kaufpreis_eur * 0.06 / 12) - (wohnflaeche_qm * 1.5))
@@ -68,6 +70,7 @@ CREATE TABLE properties (
   ) STORED,
 
   -- CF nach Steuer mit 4% AfA (Steuersatz 42%)
+  -- ZvE = Mieteinnahmen - absetzbare Zinsen (4%) - Hausgeld - AfA (Tilgung 2% ist nicht absetzbar)
   cf_nach_steuer_4pct NUMERIC(8,2) GENERATED ALWAYS AS (
     CASE WHEN ist_miete_eur IS NOT NULL AND kaufpreis_eur IS NOT NULL AND wohnflaeche_qm IS NOT NULL
     THEN (ist_miete_eur - (kaufpreis_eur * 0.06 / 12) - (wohnflaeche_qm * 1.5))

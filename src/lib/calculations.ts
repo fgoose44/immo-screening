@@ -1,13 +1,14 @@
 export const CALC_ASSUMPTIONS = {
-  FINANZIERUNG_ZINSSATZ: 0.06,   // 6% Zins p.a.
-  TILGUNG: 0,                     // Tilgungsfrei (interest only)
+  FINANZIERUNG_ZINSSATZ: 0.04,   // 4% Zins p.a. (nur steuerlich absetzbar)
+  TILGUNG: 0.02,                  // 2% Tilgung p.a. (nicht steuerlich absetzbar)
   HAUSGELD_PRO_QM: 1.50,         // €/m² monatlich
   GEBAEUDE_ANTEIL: 0.80,         // 80% des Kaufpreises
   STEUERSATZ: 0.42,               // 42% Spitzensteuersatz
   AFA_KONSERVATIV: 0.02,         // 2% p.a.
   AFA_PROGRESSIV: 0.04,          // 4% p.a.
   PRE_FILTER_MAX_EUR_QM: 2700,   // Max €/m² für automatische Aufnahme
-  ZINS_SATZ_STEUER: 0.04,        // 4% Zins für steuerliche Berechnung
+  // Nur der Zinsanteil ist steuerlich absetzbar (= FINANZIERUNG_ZINSSATZ, ohne Tilgung)
+  ZINS_SATZ_STEUER: 0.04,        // 4% Zins für steuerliche Berechnung (= FINANZIERUNG_ZINSSATZ)
 } as const;
 
 export function calcEurProQm(kaufpreis: number, flaeche: number): number | null {
@@ -26,9 +27,10 @@ export function calcCfVorSteuer(
   flaeche: number
 ): number | null {
   if (!istMiete || !kaufpreis || !flaeche) return null;
-  const zinsen = (kaufpreis * CALC_ASSUMPTIONS.FINANZIERUNG_ZINSSATZ) / 12;
+  // Monatliche Gesamtbelastung = Zins (4%) + Tilgung (2%) = 6% gesamt
+  const gesamtbelastung = (kaufpreis * (CALC_ASSUMPTIONS.FINANZIERUNG_ZINSSATZ + CALC_ASSUMPTIONS.TILGUNG)) / 12;
   const hausgeld = flaeche * CALC_ASSUMPTIONS.HAUSGELD_PRO_QM;
-  return istMiete - zinsen - hausgeld;
+  return istMiete - gesamtbelastung - hausgeld;
 }
 
 export function calcCfNachSteuer(
@@ -38,13 +40,15 @@ export function calcCfNachSteuer(
   afaRate: 0.02 | 0.04
 ): number | null {
   if (!istMiete || !kaufpreis || !flaeche) return null;
-  const zinsen6pct = (kaufpreis * CALC_ASSUMPTIONS.FINANZIERUNG_ZINSSATZ) / 12;
-  const zinsen4pct = (kaufpreis * CALC_ASSUMPTIONS.ZINS_SATZ_STEUER) / 12;
+  // Gesamtbelastung (Zins + Tilgung) für CF vor Steuer
+  const gesamtbelastung = (kaufpreis * (CALC_ASSUMPTIONS.FINANZIERUNG_ZINSSATZ + CALC_ASSUMPTIONS.TILGUNG)) / 12;
+  // Nur der Zinsanteil ist steuerlich absetzbar (Tilgung ist Vermögensbildung, nicht absetzbar)
+  const zinsenAbsetzbar = (kaufpreis * CALC_ASSUMPTIONS.ZINS_SATZ_STEUER) / 12;
   const hausgeld = flaeche * CALC_ASSUMPTIONS.HAUSGELD_PRO_QM;
   const afa = (kaufpreis * CALC_ASSUMPTIONS.GEBAEUDE_ANTEIL * afaRate) / 12;
 
-  const cfVorSteuer = istMiete - zinsen6pct - hausgeld;
-  const zvE = istMiete - zinsen4pct - hausgeld - afa; // zu versteuerndes Einkommen
+  const cfVorSteuer = istMiete - gesamtbelastung - hausgeld;
+  const zvE = istMiete - zinsenAbsetzbar - hausgeld - afa; // zu versteuerndes Einkommen
   const steuer = zvE * CALC_ASSUMPTIONS.STEUERSATZ;
 
   return cfVorSteuer - steuer;
