@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { ImapFlow } from 'imapflow';
 import { simpleParser } from 'mailparser';
 import type { ParsedMail } from 'mailparser';
+import { parseImmoScoutEmail } from '@/lib/email-parser';
 
 // Gibt den kompletten HTML-Body der neuesten ImmoScout-E-Mail zurück.
 // Kein Auth — Test-Only.
@@ -97,6 +98,10 @@ export async function GET() {
         attachments = parsed.attachments?.map((a) => `${a.filename} (${a.contentType})`) ?? [];
       }
 
+      // Parser-Ergebnis direkt mitliefern — so können wir den Parser live testen
+      const htmlBody = html || textAsHtml;
+      const parsedProperties = htmlBody ? parseImmoScoutEmail(htmlBody) : [];
+
       return NextResponse.json({
         uid: targetUid,
         envelope: targetEnvelope,
@@ -105,8 +110,11 @@ export async function GET() {
         html_length: html.length,
         text_length: text.length,
         attachments,
-        // Der komplette HTML-Body — das ist was wir zum Debuggen brauchen
-        html_body: html || textAsHtml,
+        // Parser-Ergebnis: wie viele Inserate wurden gefunden?
+        parser_found: parsedProperties.length,
+        parser_results: parsedProperties,
+        // Kompletter HTML-Body zum manuellen Debuggen
+        html_body: htmlBody,
       });
     } finally {
       lock.release();
