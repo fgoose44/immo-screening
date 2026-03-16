@@ -20,6 +20,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
   const fetchProperties = useCallback(async () => {
     try {
@@ -39,6 +41,32 @@ export default function Dashboard() {
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    setSyncMsg(null);
+    try {
+      const res = await fetch('/api/admin/sync-emails', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        setSyncMsg({ type: 'err', text: data.error ?? 'Fehler beim Abruf' });
+      } else {
+        const neu = data.properties_created ?? 0;
+        setSyncMsg({
+          type: 'ok',
+          text: neu > 0
+            ? `${neu} neues Objekt${neu > 1 ? 'e' : ''} gefunden`
+            : 'Keine neuen Objekte',
+        });
+        if (neu > 0) fetchProperties();
+      }
+    } catch (err) {
+      setSyncMsg({ type: 'err', text: err instanceof Error ? err.message : 'Netzwerkfehler' });
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setSyncMsg(null), 6000);
+    }
+  };
 
   // Client-seitiges Filtern + Sortieren
   const filtered = properties.filter((p) => {
@@ -95,11 +123,32 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Immobilien-Screening</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Eigentumswohnungen Leipzig · AfA-optimiert · 4% Zins + 2% Tilgung
-        </p>
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Immobilien-Screening</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Eigentumswohnungen Leipzig · AfA-optimiert · 4% Zins + 2% Tilgung
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {syncMsg && (
+            <span className={`text-sm ${syncMsg.type === 'ok' ? 'text-teal-600' : 'text-red-600'}`}>
+              {syncMsg.type === 'ok' ? '✓' : '✗'} {syncMsg.text}
+            </span>
+          )}
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            {syncing ? (
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <span>↻</span>
+            )}
+            E-Mails abrufen
+          </button>
+        </div>
       </div>
 
       <StatsCards properties={properties} />
