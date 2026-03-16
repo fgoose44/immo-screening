@@ -65,6 +65,7 @@ export default function Dashboard() {
   const topProps = sorted.filter((p) => p.status === 'preview' || p.status === 'enriched');
   const analyzedProps = sorted.filter((p) => p.status === 'analyzed');
   const skippedProps = sorted.filter((p) => p.status === 'skipped');
+  const soldProps = sorted.filter((p) => p.status === 'sold');
   const showSingleGroup = filters.status !== 'all';
 
   if (loading && properties.length === 0) {
@@ -116,7 +117,8 @@ export default function Dashboard() {
           title={
             filters.status === 'preview' ? 'Vorschau' :
             filters.status === 'enriched' ? 'Angereichert' :
-            filters.status === 'analyzed' ? 'Analysiert' : 'Übersprungen'
+            filters.status === 'analyzed' ? 'Analysiert' :
+            filters.status === 'sold' ? 'Verkauft' : 'Übersprungen'
           }
           emptyMessage="Keine Objekte gefunden."
         />
@@ -138,6 +140,14 @@ export default function Dashboard() {
                 Übersprungene Objekte ({skippedProps.length})
               </summary>
               <PropertyTable properties={skippedProps} title="Übersprungen" />
+            </details>
+          )}
+          {soldProps.length > 0 && (
+            <details className="mt-2">
+              <summary className="text-sm text-gray-400 cursor-pointer hover:text-gray-600 mb-3 select-none">
+                Verkaufte Objekte ({soldProps.length})
+              </summary>
+              <PropertyTable properties={soldProps} title="Verkauft" dimmed />
             </details>
           )}
         </>

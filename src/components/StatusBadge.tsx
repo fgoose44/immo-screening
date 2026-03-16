@@ -17,6 +17,10 @@ const STATUS_CONFIG: Record<PropertyStatus, { label: string; className: string }
     label: 'Übersprungen',
     className: 'bg-gray-100 text-gray-500',
   },
+  sold: {
+    label: 'Verkauft',
+    className: 'bg-gray-200 text-gray-500',
+  },
 };
 
 interface StatusBadgeProps {

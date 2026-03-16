@@ -23,6 +23,7 @@ const STATUS_OPTIONS: { value: PropertyStatus | 'all'; label: string }[] = [
   { value: 'enriched', label: 'Angereichert' },
   { value: 'analyzed', label: 'Analysiert' },
   { value: 'skipped', label: 'Übersprungen' },
+  { value: 'sold', label: 'Verkauft' },
 ];
 
 const SORT_OPTIONS: { value: SortField; label: string }[] = [

@@ -25,6 +25,7 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [skipping, setSkipping] = useState(false);
+  const [selling, setSelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -77,6 +78,19 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
       setError(err instanceof Error ? err.message : 'Fehler beim Speichern');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSell = async () => {
+    if (!confirm('Dieses Objekt als verkauft markieren? Der Status wird auf "Verkauft" gesetzt.')) return;
+    setSelling(true);
+    try {
+      const res = await fetch(`/api/properties/${p.id}/sell`, { method: 'POST' });
+      if (!res.ok) throw new Error('Aktualisierung fehlgeschlagen');
+      router.push('/');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Fehler');
+      setSelling(false);
     }
   };
 
@@ -230,17 +244,25 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
       <div className="flex gap-3 pt-2">
         <button
           onClick={handleSave}
-          disabled={saving || skipping}
+          disabled={saving || skipping || selling}
           className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors"
         >
           {saving ? 'Speichern…' : 'Speichern & Anreichern'}
         </button>
         <button
           onClick={handleSkip}
-          disabled={saving || skipping}
+          disabled={saving || skipping || selling}
           className="px-4 py-2.5 border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 text-sm rounded-lg transition-colors disabled:opacity-60"
         >
           {skipping ? '…' : 'Überspringen'}
+        </button>
+        <button
+          onClick={handleSell}
+          disabled={saving || skipping || selling}
+          className="px-4 py-2.5 border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 text-sm rounded-lg transition-colors disabled:opacity-60"
+          title="Objekt als verkauft markieren"
+        >
+          {selling ? '…' : '✓ Verkauft'}
         </button>
       </div>
       <p className="text-xs text-gray-400">* Ist-Miete wird für Rendite- und Cashflow-Berechnung benötigt</p>

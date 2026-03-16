@@ -1,4 +1,4 @@
-export type PropertyStatus = 'preview' | 'enriched' | 'analyzed' | 'skipped';
+export type PropertyStatus = 'preview' | 'enriched' | 'analyzed' | 'skipped' | 'sold';
 
 export interface Property {
   id: string;
@@ -7,6 +7,7 @@ export interface Property {
 
   // Status
   status: PropertyStatus;
+  sold_at: string | null;
 
   // Basisdaten
   title: string | null;

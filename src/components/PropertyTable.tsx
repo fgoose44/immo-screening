@@ -15,6 +15,7 @@ interface PropertyTableProps {
   properties: Property[];
   title: string;
   emptyMessage?: string;
+  dimmed?: boolean;
 }
 
 function EurQmBadge({ value }: { value: number | null }) {
@@ -30,6 +31,7 @@ export default function PropertyTable({
   properties,
   title,
   emptyMessage = 'Keine Objekte vorhanden.',
+  dimmed = false,
 }: PropertyTableProps) {
   return (
     <div className="mb-8">
@@ -43,7 +45,7 @@ export default function PropertyTable({
           {emptyMessage}
         </div>
       ) : (
-        <div className="bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden">
+        <div className={`bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden${dimmed ? ' opacity-60' : ''}`}>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
