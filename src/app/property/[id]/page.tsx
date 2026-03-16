@@ -130,6 +130,22 @@ export default async function PropertyPage({
           </div>
         </div>
       </div>
+
+      {/* Verkauft-Banner */}
+      {property.status === 'sold' && property.sold_at && (() => {
+        const created = new Date(property.created_at);
+        const sold = new Date(property.sold_at);
+        const days = Math.round((sold.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+        const label = days > 30
+          ? `ca. ${Math.round(days / 30)} Monate`
+          : `${days} Tage`;
+        const soldFormatted = sold.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        return (
+          <div className="mt-6 bg-red-50 border border-red-200 rounded-lg px-5 py-4 text-sm text-red-700">
+            <span className="font-semibold">Verkauft</span> · War {label} online (bis {soldFormatted})
+          </div>
+        );
+      })()}
     </div>
   );
 }
