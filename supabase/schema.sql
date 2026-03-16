@@ -8,7 +8,8 @@ CREATE TABLE properties (
   updated_at TIMESTAMPTZ DEFAULT now(),
 
   -- Status
-  status TEXT NOT NULL DEFAULT 'preview' CHECK (status IN ('preview', 'enriched', 'analyzed', 'skipped')),
+  status TEXT NOT NULL DEFAULT 'preview' CHECK (status IN ('preview', 'enriched', 'analyzed', 'skipped', 'sold')),
+  sold_at TIMESTAMPTZ,
 
   -- Basisdaten (aus E-Mail-Alert vorbefüllt)
   title TEXT,
