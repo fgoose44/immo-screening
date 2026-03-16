@@ -44,8 +44,24 @@ export async function runAnalysisAndSave(
   // Claude API aufrufen
   const result = await analyzeExpose(property.expose_text);
 
-  // AI-Bewertungsfelder immer übernehmen
-  const updates: Record<string, unknown> = {
+  // Nur diese Felder werden je geschrieben — niemals stadtteil, title, address
+  // oder andere Basisdaten, die aus dem E-Mail-Parser / der Chrome Extension stammen.
+  type AnalysisUpdate = {
+    status: 'analyzed';
+    ai_bewertung_lage: string;
+    ai_bewertung_mietsteigerung: string;
+    ai_bewertung_steuer: string;
+    ai_bewertung_esg: string;
+    ai_bewertung_fazit: string;
+    baujahr?: number;
+    ist_miete_eur?: number;
+    energieklasse?: string;
+    heizungsart?: string;
+    aufzug?: boolean;
+    balkon?: boolean;
+  };
+
+  const updates: AnalysisUpdate = {
     status: 'analyzed',
     ai_bewertung_lage: result.bewertung.lage,
     ai_bewertung_mietsteigerung: result.bewertung.mietsteigerung,

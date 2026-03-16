@@ -48,7 +48,8 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
     setError(null);
     try {
       const payload: Record<string, unknown> = {
-        status: 'enriched',
+        // Nicht auf 'enriched' zurückfallen wenn bereits 'analyzed'
+        ...(p.status !== 'analyzed' && { status: 'enriched' }),
         ist_miete_eur: form.ist_miete_eur ? parseFloat(form.ist_miete_eur) : null,
         soll_miete_eur: form.soll_miete_eur ? parseFloat(form.soll_miete_eur) : null,
         baujahr: form.baujahr ? parseInt(form.baujahr) : null,

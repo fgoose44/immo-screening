@@ -22,6 +22,29 @@ export async function GET(
   }
 }
 
+// Whitelist der Felder, die per PATCH aktualisiert werden dürfen.
+// Basisdaten (stadtteil, title, address, immoscout_url, kaufpreis_eur,
+// wohnflaeche_qm, zimmer, thumbnail_url) sind bewusst NICHT enthalten —
+// sie stammen aus dem E-Mail-Parser / Chrome Extension und dürfen nicht
+// durch das Anreicherungsformular überschrieben werden.
+const PATCHABLE_FIELDS = new Set([
+  'status',
+  'sold_at',
+  'ist_miete_eur',
+  'soll_miete_eur',
+  'baujahr',
+  'energieklasse',
+  'heizungsart',
+  'aufzug',
+  'balkon',
+  'expose_text',
+  'ai_bewertung_lage',
+  'ai_bewertung_mietsteigerung',
+  'ai_bewertung_steuer',
+  'ai_bewertung_esg',
+  'ai_bewertung_fazit',
+]);
+
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -31,9 +54,18 @@ export async function PATCH(
     const body = await request.json();
     const supabase = createServiceClient();
 
-    // Generierte Spalten dürfen nicht direkt gesetzt werden
-    const { eur_pro_qm, rendite_ist, afa_2_pct_monat, afa_4_pct_monat,
-            cf_vor_steuer, cf_nach_steuer_2pct, cf_nach_steuer_4pct, ...updateData } = body;
+    // Nur explizit erlaubte Felder aktualisieren — niemals stadtteil,
+    // title, address oder berechnete Generated-Columns.
+    const updateData: Record<string, unknown> = {};
+    for (const key of PATCHABLE_FIELDS) {
+      if (key in body) {
+        updateData[key] = body[key];
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'Keine gültigen Felder zum Aktualisieren' }, { status: 400 });
+    }
 
     const { data, error } = await supabase
       .from('properties')
