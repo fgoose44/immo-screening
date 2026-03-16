@@ -55,6 +55,7 @@ export default function PropertyTable({
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">€/m²</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">Rendite (Ist)</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">CF/Mon. (4% AfA)</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">Hinzugefügt</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -107,6 +108,9 @@ function PropertyRow({ property: p }: { property: Property }) {
       </td>
       <td className={`px-4 py-3 text-right whitespace-nowrap font-medium ${getCfColor(p.cf_nach_steuer_4pct)}`}>
         {p.cf_nach_steuer_4pct !== null ? formatEur(p.cf_nach_steuer_4pct) : <span className="text-gray-400">—</span>}
+      </td>
+      <td className="px-4 py-3 text-right whitespace-nowrap text-xs text-gray-400">
+        {new Date(p.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
       </td>
       <td className="px-4 py-3 text-right whitespace-nowrap">
         <Link
