@@ -97,7 +97,7 @@ export default function Dashboard() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Immobilien-Screening</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Eigentumswohnungen Leipzig · AfA-optimiert · Tilgungsfreie Finanzierung (6% Zins)
+          Eigentumswohnungen Leipzig · AfA-optimiert · 4% Zins + 2% Tilgung
         </p>
       </div>
 
