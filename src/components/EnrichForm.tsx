@@ -11,15 +11,15 @@ interface EnrichFormProps {
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-500 mb-1">{label}</label>
+      <label className="block text-[12px] font-medium text-content-muted mb-1">{label}</label>
       {children}
     </div>
   );
 }
 
-const inputBase = 'w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-purple-400';
-const inputEnabled = `${inputBase} border-gray-200 bg-white text-gray-800`;
-const inputDisabled = `${inputBase} border-gray-100 bg-gray-50 text-gray-500 cursor-not-allowed`;
+const inputBase = 'w-full px-3 py-2 text-[13px] rounded-[8px] border transition-colors';
+const inputEnabled = `${inputBase} border-border bg-surface-input text-content-body focus:outline-none focus:border-brand-primary-mid focus:bg-surface-card`;
+const inputDisabled = `${inputBase} border-border-light bg-surface-disabled text-content-muted cursor-not-allowed`;
 
 export default function EnrichForm({ property: p }: EnrichFormProps) {
   const router = useRouter();
@@ -111,7 +111,7 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
     <div className="space-y-6">
       {/* Vorbefüllte Basisdaten (disabled) */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+        <p className="text-[11px] font-medium text-content-muted uppercase tracking-[0.05em] mb-3">
           Basisdaten (aus E-Mail-Alert)
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -139,7 +139,7 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
             href={p.immoscout_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-block text-xs text-purple-600 hover:underline"
+            className="mt-2 inline-block text-[12px] text-brand-primary hover:underline"
           >
             ImmoScout-Exposé öffnen →
           </a>
@@ -148,7 +148,7 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
 
       {/* Editierbare Anreicherungsfelder */}
       <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+        <p className="text-[11px] font-medium text-content-muted uppercase tracking-[0.05em] mb-3">
           Anreicherung
         </p>
         <div className="grid grid-cols-2 gap-3">
@@ -230,12 +230,12 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
 
       {/* Fehlermeldung / Erfolg */}
       {error && (
-        <div className="px-3 py-2 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+        <div className="px-3 py-2 bg-danger-light border border-[#F2C4C4] rounded-[8px] text-[13px] text-danger-dark">
           {error}
         </div>
       )}
       {success && (
-        <div className="px-3 py-2 bg-teal-50 border border-teal-200 rounded-lg text-sm text-teal-700">
+        <div className="px-3 py-2 bg-success-light border border-success-light rounded-[8px] text-[13px] text-success-dark">
           Gespeichert ✓
         </div>
       )}
@@ -245,27 +245,27 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
         <button
           onClick={handleSave}
           disabled={saving || skipping || selling}
-          className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors"
+          className="flex-1 py-2 bg-brand-primary hover:bg-brand-primary-dark disabled:opacity-60 text-white text-[13px] font-medium rounded-[8px] transition-colors"
         >
           {saving ? 'Speichern…' : 'Speichern & Anreichern'}
         </button>
         <button
           onClick={handleSkip}
           disabled={saving || skipping || selling}
-          className="px-4 py-2.5 border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 text-sm rounded-lg transition-colors disabled:opacity-60"
+          className="px-4 py-2 bg-transparent border border-border text-content-secondary hover:text-content-body text-[13px] rounded-[8px] transition-colors disabled:opacity-60"
         >
           {skipping ? '…' : 'Überspringen'}
         </button>
         <button
           onClick={handleSell}
           disabled={saving || skipping || selling}
-          className="px-4 py-2.5 border border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300 text-sm rounded-lg transition-colors disabled:opacity-60"
+          className="px-4 py-2 bg-transparent border border-[#F2C4C4] text-danger hover:text-danger-dark text-[13px] rounded-[8px] transition-colors disabled:opacity-60"
           title="Objekt als verkauft markieren"
         >
           {selling ? '…' : '✓ Verkauft'}
         </button>
       </div>
-      <p className="text-xs text-gray-400">* Ist-Miete wird für Rendite- und Cashflow-Berechnung benötigt</p>
+      <p className="text-[12px] text-content-hint">* Ist-Miete wird für Rendite- und Cashflow-Berechnung benötigt</p>
     </div>
   );
 }

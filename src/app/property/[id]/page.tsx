@@ -41,93 +41,91 @@ export default async function PropertyPage({
 
   return (
     <div>
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-400 mb-5">
-        <Link href="/" className="hover:text-purple-600 transition-colors">
+      {/* Schritt 1: Breadcrumb */}
+      <div className="flex items-center gap-2 text-[12px] text-content-muted mb-5">
+        <Link href="/" className="text-brand-primary hover:text-brand-primary-dark transition-colors">
           ← Dashboard
         </Link>
         <span>/</span>
-        <span className="text-gray-600 truncate max-w-xs">{property.title ?? 'Ohne Titel'}</span>
+        <span className="truncate max-w-xs">{property.title ?? 'Ohne Titel'}</span>
       </div>
 
-      {/* Header */}
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-6">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-xl font-bold text-gray-900">
-              {property.title ?? property.address ?? 'Ohne Titel'}
-            </h1>
-            <StatusBadge status={property.status} />
-          </div>
-          <p className="text-sm text-gray-500">
-            {[
-              property.stadtteil,
-              property.address,
-              property.wohnflaeche_qm ? formatQm(property.wohnflaeche_qm) : null,
-              property.zimmer ? `${property.zimmer} Zi.` : null,
-              property.baujahr ? `Bj. ${property.baujahr}` : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
+      {/* Titel-Row */}
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+        <h1 className="text-[24px] font-bold text-content-primary tracking-[-0.3px]">
+          {property.title ?? property.address ?? 'Ohne Titel'}
+        </h1>
+        <div className="text-right">
+          <p className="text-[24px] font-bold text-content-primary tabular-nums">
+            {property.kaufpreis_eur ? formatEur(property.kaufpreis_eur) : '—'}
           </p>
-        </div>
-
-        {/* Rechts: Preis + PDF-Button */}
-        <div className="flex flex-col items-end gap-2">
-          <div className="text-right">
-            <p className="text-2xl font-bold text-gray-900">
-              {property.kaufpreis_eur ? formatEur(property.kaufpreis_eur) : '—'}
+          {property.eur_pro_qm !== null && (
+            <p className="text-[13px] text-warning font-semibold tabular-nums">
+              {formatEur(property.eur_pro_qm)} / m²
             </p>
-            {property.eur_pro_qm && (
-              <p className="text-sm text-gray-500">{formatEur(property.eur_pro_qm)} / m²</p>
-            )}
-          </div>
-          {/* PDF-Download-Button (Client Component) */}
+          )}
+        </div>
+      </div>
+
+      {/* Meta-Row */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-5">
+        <div className="flex items-center gap-1.5 text-[12px] text-content-muted">
+          {property.wohnflaeche_qm !== null && <span>{formatQm(property.wohnflaeche_qm)}</span>}
+          {property.zimmer !== null && <><span className="opacity-40">·</span><span>{property.zimmer} Zi.</span></>}
+          {property.baujahr !== null && <><span className="opacity-40">·</span><span>Bj. {property.baujahr}</span></>}
+        </div>
+        <StatusBadge status={property.status} />
+        {property.immoscout_url && (
+          <a
+            href={property.immoscout_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[12px] text-brand-primary hover:underline"
+          >
+            ImmoScout ↗
+          </a>
+        )}
+        <div className="ml-auto">
           <PdfDownloadButton propertyId={property.id} initialPdfUrl={pdfUrl} />
         </div>
       </div>
 
-      {/* Tags */}
+      {/* Feature-Chips */}
       <div className="flex flex-wrap gap-2 mb-8">
         {property.energieklasse && (
-          <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md font-medium">
+          <span className="px-3 py-1 border border-border rounded-[20px] text-xs text-content-secondary">
             Energie {property.energieklasse}
           </span>
         )}
         {property.heizungsart && (
-          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md">
+          <span className="px-3 py-1 border border-border rounded-[20px] text-xs text-content-secondary">
             {property.heizungsart}
           </span>
         )}
         {property.aufzug !== null && (
-          <span className={`px-2 py-1 text-xs rounded-md ${property.aufzug ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-500'}`}>
-            {property.aufzug ? '✓ Aufzug' : '✗ Kein Aufzug'}
+          <span className={`px-3 py-1 border border-border rounded-[20px] text-xs ${property.aufzug ? 'text-success' : 'text-content-muted'}`}>
+            {property.aufzug ? '✓' : '✗'} Aufzug
           </span>
         )}
         {property.balkon !== null && (
-          <span className={`px-2 py-1 text-xs rounded-md ${property.balkon ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-500'}`}>
-            {property.balkon ? '✓ Balkon' : '✗ Kein Balkon'}
+          <span className={`px-3 py-1 border border-border rounded-[20px] text-xs ${property.balkon ? 'text-success' : 'text-content-muted'}`}>
+            {property.balkon ? '✓' : '✗'} Balkon
           </span>
         )}
       </div>
 
-      {/* Zwei-Spalten-Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Linke Spalte: Formular (2/3 Breite) */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm p-6">
-          <h2 className="text-base font-semibold text-gray-700 mb-5">Daten anreichern</h2>
+      {/* Schritt 3: Zwei-Spalten-Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
+        {/* Links (1fr): Anreicherungs-Formular */}
+        <div className="bg-surface-card rounded-[14px] border border-border p-5">
+          <h2 className="text-[14px] font-semibold text-content-primary mb-4">Daten anreichern</h2>
           <EnrichForm property={property} />
         </div>
 
-        {/* Rechte Spalte: Kennzahlen + KI (1/3 Breite) */}
-        <div className="space-y-6">
-          <div>
-            <h2 className="text-base font-semibold text-gray-700 mb-3">Kennzahlen</h2>
-            <KennzahlenPanel property={property} />
-          </div>
-          <div>
-            <AiReview property={property} />
-          </div>
+        {/* Rechts (340px): Kennzahlen-Card + KI-Bewertungs-Card */}
+        <div className="space-y-4">
+          <KennzahlenPanel property={property} />
+          <AiReview property={property} />
         </div>
       </div>
 
@@ -141,7 +139,7 @@ export default async function PropertyPage({
           : `${days} Tage`;
         const soldFormatted = sold.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
         return (
-          <div className="mt-6 bg-red-50 border border-red-200 rounded-lg px-5 py-4 text-sm text-red-700">
+          <div className="mt-6 bg-danger-light border border-[#F2C4C4] rounded-[8px] px-5 py-4 text-sm text-danger-dark">
             <span className="font-semibold">Verkauft</span> · War {label} online (bis {soldFormatted})
           </div>
         );

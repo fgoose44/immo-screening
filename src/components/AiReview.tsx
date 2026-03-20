@@ -34,7 +34,7 @@ function AnalyzeButton({
     <button
       onClick={onClick}
       disabled={loading}
-      className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+      className="w-full py-2 bg-brand-primary hover:bg-brand-primary-dark disabled:opacity-60 text-white text-[13px] font-medium rounded-[8px] transition-colors flex items-center justify-center gap-2"
     >
       {loading ? (
         <>
@@ -74,29 +74,29 @@ export default function AiReview({ property: p }: AiReviewProps) {
   // Noch keine Analyse
   if (!hasAnalysis) {
     return (
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-          KI-Bewertung
-        </p>
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+      <div className="bg-surface-card rounded-[14px] border border-border overflow-hidden">
+        <div className="px-4 py-3 border-b border-border-light">
+          <h2 className="text-[14px] font-semibold text-content-primary">KI-Bewertung</h2>
+        </div>
+        <div className="p-4">
           {hasExposeText ? (
             <div className="text-center">
-              <div className="w-10 h-10 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-10 h-10 bg-brand-primary-lt rounded-full flex items-center justify-center mx-auto mb-3">
                 <span className="text-xl">🤖</span>
               </div>
-              <p className="text-sm text-gray-600 mb-1 font-medium">Exposé-Text vorhanden</p>
-              <p className="text-xs text-gray-400 mb-4">
+              <p className="text-[13px] text-content-body mb-1 font-medium">Exposé-Text vorhanden</p>
+              <p className="text-[12px] text-content-muted mb-4">
                 Claude analysiert Lage, Mietsteigerung, AfA-Potenzial, ESG und gibt ein Fazit.
               </p>
               <AnalyzeButton onClick={handleAnalyze} loading={loading} label="KI-Analyse starten" />
               {error && (
-                <p className="mt-3 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+                <p className="mt-3 text-[12px] text-danger-dark bg-danger-light rounded-[8px] px-3 py-2">{error}</p>
               )}
             </div>
           ) : (
             <div className="text-center py-2">
-              <p className="text-sm text-gray-400">Kein Exposé-Text vorhanden.</p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-[13px] text-content-muted">Kein Exposé-Text vorhanden.</p>
+              <p className="text-[12px] text-content-hint mt-1">
                 Bitte Exposé-Text im Formular eintragen und speichern.
               </p>
             </div>
@@ -108,33 +108,27 @@ export default function AiReview({ property: p }: AiReviewProps) {
 
   // Analyse vorhanden — Ergebnisse anzeigen
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-          KI-Bewertung
-        </p>
-        <span className="inline-flex items-center gap-1 text-xs text-teal-600 font-medium bg-teal-50 px-2 py-0.5 rounded">
+    <div className="bg-surface-card rounded-[14px] border border-border overflow-hidden">
+      <div className="px-4 py-3 border-b border-border-light flex items-center justify-between">
+        <h2 className="text-[14px] font-semibold text-content-primary">KI-Bewertung</h2>
+        <span className="inline-flex items-center gap-1 text-[11px] font-medium text-success-dark bg-success-light px-2.5 py-[3px] rounded-[20px]">
           ✓ Analysiert
         </span>
       </div>
 
-      <div className="space-y-2">
+      <div className="divide-y divide-border-light">
         {BEWERTUNG_FELDER.map(({ key, label, icon, highlight }) => {
           const value = p[key] as string | null;
           if (!value) return null;
           return (
             <div
               key={key}
-              className={`rounded-xl border px-4 py-3 shadow-sm ${
-                highlight
-                  ? 'border-purple-200 bg-purple-50'
-                  : 'border-gray-100 bg-white'
-              }`}
+              className={`px-4 py-3 ${highlight ? 'bg-brand-primary-lt' : ''}`}
             >
-              <p className={`text-xs font-semibold mb-1 ${highlight ? 'text-purple-600' : 'text-gray-500'}`}>
+              <p className={`text-[12px] font-semibold mb-1 ${highlight ? 'text-brand-primary' : 'text-content-primary'}`}>
                 {icon} {label}
               </p>
-              <p className={`text-sm leading-relaxed ${highlight ? 'text-purple-900 font-medium' : 'text-gray-700'}`}>
+              <p className={`text-[12px] leading-[1.6] ${highlight ? 'text-brand-primary-dark' : 'text-content-secondary'}`}>
                 {value}
               </p>
             </div>
@@ -142,14 +136,14 @@ export default function AiReview({ property: p }: AiReviewProps) {
         })}
       </div>
 
-      <div className="mt-3">
+      <div className="px-4 py-3 border-t border-border-light">
         <AnalyzeButton
           onClick={handleAnalyze}
           loading={loading}
           label="Neu analysieren"
         />
         {error && (
-          <p className="mt-2 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+          <p className="mt-2 text-[12px] text-danger-dark bg-danger-light rounded-[8px] px-3 py-2">{error}</p>
         )}
       </div>
     </div>

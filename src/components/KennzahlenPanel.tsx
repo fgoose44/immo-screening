@@ -7,37 +7,34 @@ interface KennzahlenPanelProps {
 
 function Row({ label, value, className = '' }: { label: string; value: React.ReactNode; className?: string }) {
   return (
-    <div className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-500">{label}</span>
-      <span className={`text-sm font-medium ${className}`}>{value}</span>
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-4">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{title}</p>
-      <div className="bg-white rounded-lg border border-gray-100 px-4 py-1 shadow-sm">
-        {children}
-      </div>
+    <div className="flex justify-between items-center py-2.5">
+      <span className="text-[12px] text-content-muted">{label}</span>
+      <span className={`text-[13px] font-medium tabular-nums ${className}`}>{value}</span>
     </div>
   );
 }
 
 export default function KennzahlenPanel({ property: p }: KennzahlenPanelProps) {
   const eurQmColor = p.eur_pro_qm !== null
-    ? getEurProQmColor(p.eur_pro_qm).split(' ')[0] // nur text-color
-    : 'text-gray-400';
+    ? getEurProQmColor(p.eur_pro_qm).color
+    : 'text-content-muted';
 
   return (
-    <div>
-      <Section title="Kaufpreis-Analyse">
+    <div className="bg-surface-card rounded-[14px] border border-border overflow-hidden">
+      <div className="px-4 py-3 border-b border-border-light">
+        <h2 className="text-[14px] font-semibold text-content-primary">Kennzahlen</h2>
+      </div>
+
+      {/* Sektion 1: Kaufpreis-Analyse */}
+      <div className="px-4 border-b border-border-light">
+        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-content-muted pt-3 pb-0.5">
+          Kaufpreis-Analyse
+        </p>
         <Row
           label="€/m²"
           value={
             p.eur_pro_qm !== null ? (
-              <span className={`px-2 py-0.5 rounded text-xs font-semibold ${getEurProQmColor(p.eur_pro_qm)}`}>
+              <span className={`font-semibold ${eurQmColor}`}>
                 {formatEur(p.eur_pro_qm)}
               </span>
             ) : '—'
@@ -45,42 +42,60 @@ export default function KennzahlenPanel({ property: p }: KennzahlenPanelProps) {
         />
         <Row
           label="Bruttorendite (Ist)"
-          value={p.rendite_ist !== null
-            ? <span className={p.rendite_ist >= 0.04 ? 'text-teal-700' : 'text-gray-700'}>{formatProzent(p.rendite_ist)}</span>
-            : <span className="text-gray-400">— (Ist-Miete fehlt)</span>
+          value={
+            p.rendite_ist !== null
+              ? <span className={p.rendite_ist >= 0.04 ? 'text-success-dark' : 'text-content-body'}>{formatProzent(p.rendite_ist)}</span>
+              : <span className="text-content-muted text-[12px]">— (Ist-Miete fehlt)</span>
           }
         />
-      </Section>
+      </div>
 
-      <Section title="AfA-Potenzial / Monat (80% Gebäudeanteil)">
-        <Row label="AfA konservativ (2% p.a.)" value={p.afa_2_pct_monat !== null ? formatEur(p.afa_2_pct_monat) : '—'} className="text-gray-700" />
-        <Row label="AfA progressiv (4% p.a.)" value={p.afa_4_pct_monat !== null ? formatEur(p.afa_4_pct_monat) : '—'} className="text-purple-700" />
-      </Section>
+      {/* Sektion 2: AfA-Potenzial */}
+      <div className="px-4 border-b border-border-light">
+        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-content-muted pt-3 pb-0.5">
+          AfA-Potenzial / Monat
+        </p>
+        <Row
+          label="Konservativ (2% p.a.)"
+          value={p.afa_2_pct_monat !== null ? formatEur(p.afa_2_pct_monat) : '—'}
+          className="text-content-body"
+        />
+        <Row
+          label="Progressiv (4% p.a.)"
+          value={p.afa_4_pct_monat !== null ? formatEur(p.afa_4_pct_monat) : '—'}
+          className="text-brand-primary font-semibold"
+        />
+      </div>
 
-      <Section title="Cashflow / Monat (100% Fin., 6% Zins, 1,50 €/m² HG)">
+      {/* Sektion 3: Cashflow */}
+      <div className="px-4 pb-4">
+        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-content-muted pt-3 pb-0.5">
+          Cashflow / Monat
+        </p>
         <Row
           label="Vor Steuer"
-          value={p.cf_vor_steuer !== null ? formatEur(p.cf_vor_steuer) : <span className="text-gray-400">— (Ist-Miete fehlt)</span>}
+          value={p.cf_vor_steuer !== null ? formatEur(p.cf_vor_steuer) : <span className="text-content-muted text-[12px]">— (Ist-Miete fehlt)</span>}
           className={getCfColor(p.cf_vor_steuer)}
         />
         <Row
-          label="Nach Steuer · 2% AfA (42%)"
-          value={p.cf_nach_steuer_2pct !== null ? formatEur(p.cf_nach_steuer_2pct) : <span className="text-gray-400">—</span>}
+          label="Nach Steuer · 2% AfA"
+          value={p.cf_nach_steuer_2pct !== null ? formatEur(p.cf_nach_steuer_2pct) : '—'}
           className={getCfColor(p.cf_nach_steuer_2pct)}
         />
         <Row
-          label="Nach Steuer · 4% AfA (42%)"
-          value={p.cf_nach_steuer_4pct !== null ? formatEur(p.cf_nach_steuer_4pct) : <span className="text-gray-400">—</span>}
-          className={`font-bold ${getCfColor(p.cf_nach_steuer_4pct)}`}
+          label="Nach Steuer · 4% AfA"
+          value={p.cf_nach_steuer_4pct !== null ? formatEur(p.cf_nach_steuer_4pct) : '—'}
+          className={`font-semibold ${getCfColor(p.cf_nach_steuer_4pct)}`}
         />
-      </Section>
 
-      <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-100 text-xs text-gray-400 space-y-0.5">
-        <p className="font-medium text-gray-500 mb-1">Annahmen</p>
-        <p>Finanzierung: 100% · tilgungsfrei · 6% Zins</p>
-        <p>Hausgeld: 1,50 €/m² · Steuersatz: 42%</p>
-        <p>Gebäudeanteil AfA: 80% des Kaufpreises</p>
-        <p>Steuerlicher Zins: 4% p.a.</p>
+        {/* Annahmen-Note */}
+        <div className="mt-3 px-3 py-2 bg-surface-hover rounded-[8px] text-[11px] text-content-hint space-y-0.5">
+          <p className="font-medium text-content-muted mb-0.5">Annahmen</p>
+          <p>Finanzierung: 100% · tilgungsfrei · 6% Zins</p>
+          <p>Hausgeld: 1,50 €/m² · Steuersatz: 42%</p>
+          <p>Gebäudeanteil AfA: 80% des Kaufpreises</p>
+          <p>Steuerlicher Zins: 4% p.a.</p>
+        </div>
       </div>
     </div>
   );
