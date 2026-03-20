@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import NavLinks from "@/components/NavLinks";
 
 export const metadata: Metadata = {
   title: "ImmoScout Screening",
@@ -20,25 +21,20 @@ export default function RootLayout({
           <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
 
             {/* Links: Logo + Titel */}
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-3">
               <div className="w-[26px] h-[26px] rounded-[6px] bg-brand-primary-mid flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-[10px] font-bold leading-none">IS</span>
               </div>
               <span className="font-semibold text-content-primary text-sm tracking-tight">
                 ImmoScout Screening
               </span>
-              <span className="text-content-hint mx-1">|</span>
-              <span className="text-xs text-content-secondary">Leipzig</span>
+              <span className="text-content-hint">|</span>
+              <NavLinks />
             </div>
 
-            {/* Rechts: Meta-Text + Avatar */}
-            <div className="flex items-center gap-4">
-              <span className="text-xs text-content-muted hidden sm:block">
-                Privatinvestor · AfA-optimiert
-              </span>
-              <div className="w-[30px] h-[30px] rounded-full bg-[#C9C6EC] flex items-center justify-center flex-shrink-0">
-                <span className="text-[#5A5490] text-[11px] font-semibold">FG</span>
-              </div>
+            {/* Rechts: Avatar */}
+            <div className="w-[30px] h-[30px] rounded-full bg-[#C9C6EC] flex items-center justify-center flex-shrink-0">
+              <span className="text-[#5A5490] text-[11px] font-semibold">FG</span>
             </div>
 
           </div>
