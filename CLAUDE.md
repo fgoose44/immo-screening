@@ -429,3 +429,34 @@ immo-screening/
 - **Supabase Schema**: Erstelle eine `supabase/schema.sql` Datei mit dem SQL oben. Fabian führt das SQL manuell im Supabase SQL Editor aus.
 - **Keine harten API-Keys im Code** — alles über Environment Variables.
 - **Deutsche UI** — Alle Labels und Texte im Dashboard auf Deutsch.
+
+---
+
+## Arbeitsweise & Qualitätssicherung
+
+### Sessionstart
+- Lies tasks/lessons.md am Anfang jeder Session auf relevante Muster
+- Lies tasks/todo.md um offene Tasks zu kennen
+
+### Vor jeder nicht-trivialen Änderung (3+ Schritte oder Architektur-Entscheidung)
+- Schreibe einen kurzen Plan nach tasks/todo.md mit Checkboxen
+- Bestätige den Plan kurz bevor du implementierst
+- Markiere Punkte als erledigt wenn abgeschlossen
+- Zeige am Ende eine kurze Zusammenfassung was sich geändert hat
+
+### Lernschleife
+- Nach jeder Korrektur durch Fabian: trage das Muster in tasks/lessons.md ein
+- Format: Was war falsch → Warum → Regel für die Zukunft
+- Ziel: Kein Fehler passiert zweimal
+
+### Sicherheitsregeln (nicht verhandelbar)
+- Niemals Basisdaten überschreiben die nicht aus KI-Analyse stammen:
+  stadtteil, title, address, kaufpreis_eur, wohnflaeche_qm, zimmer, baujahr
+- Bei Änderungen am DB-Schema oder API-Routes: erst kurz fragen, dann umsetzen
+- Bei Änderungen an .env.local oder Supabase-Konfiguration: immer fragen
+- Vor "fertig": kurz zeigen was sich geändert hat
+
+### Einfachheit vor Eleganz
+- Minimaler Code-Impact bei jeder Änderung
+- Keine Refactors nebenbei — nur was zum Task gehört
+- Bei Unsicherheit: einfachere Lösung wählen und kurz erklären warum
