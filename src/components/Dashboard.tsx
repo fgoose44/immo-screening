@@ -100,8 +100,8 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center py-32">
         <div className="text-center">
-          <div className="w-8 h-8 border-2 border-purple-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-gray-500">Lade Objekte…</p>
+          <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[13px] text-content-secondary">Lade Objekte…</p>
         </div>
       </div>
     );
@@ -109,11 +109,11 @@ export default function Dashboard() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-        <p className="text-red-700 font-medium">Fehler: {error}</p>
+      <div className="bg-danger-light border border-danger rounded-xl p-6 text-center">
+        <p className="text-danger-dark font-medium text-[13px]">Fehler: {error}</p>
         <button
           onClick={fetchProperties}
-          className="mt-3 px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+          className="mt-3 px-4 py-2 bg-danger text-white text-[13px] rounded-lg hover:opacity-90"
         >
           Erneut versuchen
         </button>
@@ -125,21 +125,21 @@ export default function Dashboard() {
     <div>
       <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Immobilien-Screening</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-[24px] font-bold text-content-primary tracking-tight">Immobilien-Screening</h1>
+          <p className="mt-1 text-[13px] text-content-secondary">
             Eigentumswohnungen Leipzig · AfA-optimiert · 4% Zins + 2% Tilgung
           </p>
         </div>
         <div className="flex items-center gap-3">
           {syncMsg && (
-            <span className={`text-sm ${syncMsg.type === 'ok' ? 'text-teal-600' : 'text-red-600'}`}>
+            <span className={`text-[13px] ${syncMsg.type === 'ok' ? 'text-success-dark' : 'text-danger-dark'}`}>
               {syncMsg.type === 'ok' ? '✓' : '✗'} {syncMsg.text}
             </span>
           )}
           <button
             onClick={handleSync}
             disabled={syncing}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-brand-primary hover:bg-brand-primary-dark disabled:opacity-60 text-white text-[13px] font-medium rounded-lg transition-colors"
           >
             {syncing ? (
               <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -185,7 +185,7 @@ export default function Dashboard() {
           />
           {skippedProps.length > 0 && (
             <details className="mt-2">
-              <summary className="text-sm text-gray-400 cursor-pointer hover:text-gray-600 mb-3 select-none">
+              <summary className="text-[13px] text-content-muted cursor-pointer hover:text-content-secondary mb-3 select-none">
                 Übersprungene Objekte ({skippedProps.length})
               </summary>
               <PropertyTable properties={skippedProps} title="Übersprungen" />
@@ -193,7 +193,7 @@ export default function Dashboard() {
           )}
           {soldProps.length > 0 && (
             <details className="mt-2">
-              <summary className="text-sm text-gray-400 cursor-pointer hover:text-gray-600 mb-3 select-none">
+              <summary className="text-[13px] text-content-muted cursor-pointer hover:text-content-secondary mb-3 select-none">
                 Verkaufte Objekte ({soldProps.length})
               </summary>
               <PropertyTable properties={soldProps} title="Verkauft" dimmed />
@@ -203,10 +203,10 @@ export default function Dashboard() {
       )}
 
       {properties.length === 0 && !loading && (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20 text-content-muted">
           <div className="text-5xl mb-4">🏠</div>
-          <p className="text-lg font-medium text-gray-500">Noch keine Objekte vorhanden</p>
-          <p className="text-sm mt-2">
+          <p className="text-[16px] font-medium text-content-secondary">Noch keine Objekte vorhanden</p>
+          <p className="text-[13px] mt-2">
             Objekte werden automatisch über E-Mail-Alerts oder die Chrome Extension hinzugefügt.
           </p>
         </div>

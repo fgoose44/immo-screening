@@ -18,10 +18,11 @@ interface PropertyTableProps {
   dimmed?: boolean;
 }
 
-function EurQmBadge({ value }: { value: number | null }) {
-  if (value === null) return <span className="text-gray-400">—</span>;
+function EurQmCell({ value }: { value: number | null }) {
+  if (value === null) return <span className="text-content-muted">—</span>;
+  const { color } = getEurProQmColor(value);
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-semibold ${getEurProQmColor(value)}`}>
+    <span className={`font-semibold tabular-nums ${color}`}>
       {formatEur(value)}
     </span>
   );
@@ -33,91 +34,97 @@ export default function PropertyTable({
   emptyMessage = 'Keine Objekte vorhanden.',
   dimmed = false,
 }: PropertyTableProps) {
-  return (
-    <div className="mb-8">
-      <h2 className="text-base font-semibold text-gray-700 mb-3">
-        {title}{' '}
-        <span className="text-sm font-normal text-gray-400">({properties.length})</span>
-      </h2>
+  const count = properties.length;
 
-      {properties.length === 0 ? (
-        <div className="bg-white border border-gray-100 rounded-lg py-8 text-center text-gray-400 text-sm">
-          {emptyMessage}
+  return (
+    <div className={`mb-5${dimmed ? ' opacity-60' : ''}`}>
+      {/* Card */}
+      <div className="bg-surface-card border border-border rounded-[14px] overflow-hidden">
+
+        {/* Card-Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <span className="text-[14px] font-semibold text-content-primary">{title}</span>
+          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-brand-primary-lt text-brand-primary">
+            {count}
+          </span>
         </div>
-      ) : (
-        <div className={`bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden${dimmed ? ' opacity-60' : ''}`}>
+
+        {count === 0 ? (
+          <div className="py-8 text-center text-[13px] text-content-muted">
+            {emptyMessage}
+          </div>
+        ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Objekt</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Stadtteil</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">Kaufpreis</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">€/m²</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">Rendite (Ist)</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">CF/Mon. (4% AfA)</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">Hinzugefügt</th>
-                  <th className="px-4 py-3" />
+                <tr className="bg-surface-thead border-b border-border">
+                  <th className="px-4 py-2.5 text-left text-[11px] font-medium text-content-muted uppercase tracking-wide">Status</th>
+                  <th className="px-4 py-2.5 text-left text-[11px] font-medium text-content-muted uppercase tracking-wide">Objekt</th>
+                  <th className="px-4 py-2.5 text-left text-[11px] font-medium text-content-muted uppercase tracking-wide">Stadtteil</th>
+                  <th className="px-4 py-2.5 text-right text-[11px] font-medium text-content-muted uppercase tracking-wide">Kaufpreis</th>
+                  <th className="px-4 py-2.5 text-right text-[11px] font-medium text-content-muted uppercase tracking-wide">€/m²</th>
+                  <th className="px-4 py-2.5 text-right text-[11px] font-medium text-content-muted uppercase tracking-wide">Rendite (Ist)</th>
+                  <th className="px-4 py-2.5 text-right text-[11px] font-medium text-content-muted uppercase tracking-wide">CF/Mon. (4% AfA)</th>
+                  <th className="px-4 py-2.5 text-right text-[11px] font-medium text-content-muted uppercase tracking-wide">Hinzugefügt</th>
+                  <th className="px-4 py-2.5" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
-                {properties.map((property) => (
-                  <PropertyRow key={property.id} property={property} />
+              <tbody>
+                {properties.map((property, i) => (
+                  <PropertyRow key={property.id} property={property} last={i === properties.length - 1} />
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
 
-function PropertyRow({ property: p }: { property: Property }) {
+function PropertyRow({ property: p, last }: { property: Property; last: boolean }) {
+  const renditeColor = p.rendite_ist !== null && p.rendite_ist >= 0.04
+    ? 'text-success-dark font-medium'
+    : 'text-content-body';
+  const cfColorClass = getCfColor(p.cf_nach_steuer_4pct);
+
   return (
-    <tr className="hover:bg-gray-50 transition-colors">
-      <td className="px-4 py-3 whitespace-nowrap">
+    <tr className={`hover:bg-surface-hover transition-colors${last ? '' : ' border-b border-border-row'}`}>
+      <td className="px-4 py-[11px] whitespace-nowrap">
         <StatusBadge status={p.status} />
       </td>
-      <td className="px-4 py-3 max-w-xs">
-        <div className="font-medium text-gray-800 truncate max-w-[220px]">
+      <td className="px-4 py-[11px] max-w-xs">
+        <div className="font-medium text-[13px] text-content-primary truncate max-w-[220px]">
           {p.title ?? p.address ?? 'Ohne Titel'}
         </div>
-        <div className="text-xs text-gray-400 mt-0.5">
+        <div className="text-[11px] text-content-muted mt-0.5">
           {p.wohnflaeche_qm ? formatQm(p.wohnflaeche_qm) : '—'}
           {p.zimmer ? ` · ${p.zimmer} Zi.` : ''}
           {p.baujahr ? ` · Bj. ${p.baujahr}` : ''}
         </div>
       </td>
-      <td className="px-4 py-3 whitespace-nowrap text-gray-600">
+      <td className="px-4 py-[11px] whitespace-nowrap text-[13px] text-content-body">
         {p.stadtteil ?? '—'}
       </td>
-      <td className="px-4 py-3 text-right whitespace-nowrap font-medium text-gray-800">
+      <td className="px-4 py-[11px] text-right whitespace-nowrap text-[13px] font-medium text-content-primary tabular-nums">
         {p.kaufpreis_eur ? formatEur(p.kaufpreis_eur) : '—'}
       </td>
-      <td className="px-4 py-3 text-right whitespace-nowrap">
-        <EurQmBadge value={p.eur_pro_qm} />
+      <td className="px-4 py-[11px] text-right whitespace-nowrap">
+        <EurQmCell value={p.eur_pro_qm} />
       </td>
-      <td className="px-4 py-3 text-right whitespace-nowrap">
-        {p.rendite_ist !== null ? (
-          <span className={p.rendite_ist >= 0.04 ? 'text-teal-700 font-medium' : 'text-gray-600'}>
-            {formatProzent(p.rendite_ist)}
-          </span>
-        ) : (
-          <span className="text-gray-400">—</span>
-        )}
+      <td className={`px-4 py-[11px] text-right whitespace-nowrap text-[13px] tabular-nums ${renditeColor}`}>
+        {p.rendite_ist !== null ? formatProzent(p.rendite_ist) : <span className="text-content-muted">—</span>}
       </td>
-      <td className={`px-4 py-3 text-right whitespace-nowrap font-medium ${getCfColor(p.cf_nach_steuer_4pct)}`}>
-        {p.cf_nach_steuer_4pct !== null ? formatEur(p.cf_nach_steuer_4pct) : <span className="text-gray-400">—</span>}
+      <td className={`px-4 py-[11px] text-right whitespace-nowrap text-[13px] font-medium tabular-nums ${cfColorClass}`}>
+        {p.cf_nach_steuer_4pct !== null ? formatEur(p.cf_nach_steuer_4pct) : <span className="text-content-muted">—</span>}
       </td>
-      <td className="px-4 py-3 text-right whitespace-nowrap text-xs text-gray-400">
+      <td className="px-4 py-[11px] text-right whitespace-nowrap text-[11px] text-content-muted">
         {new Date(p.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
       </td>
-      <td className="px-4 py-3 text-right whitespace-nowrap">
+      <td className="px-4 py-[11px] text-right whitespace-nowrap">
         <Link
           href={`/property/${p.id}`}
-          className="text-purple-600 hover:text-purple-800 text-xs font-medium"
+          className="text-[12px] text-brand-primary hover:text-brand-primary-dark font-medium"
         >
           Details →
         </Link>

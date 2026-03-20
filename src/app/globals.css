@@ -1,8 +1,47 @@
 @import "tailwindcss";
 
+@theme {
+  /* Brand */
+  --color-brand-primary:      #7A74C2;
+  --color-brand-primary-lt:   #EEEDF9;
+  --color-brand-primary-mid:  #A59FD8;
+  --color-brand-primary-dark: #5A5490;
+
+  /* Semantic */
+  --color-success:       #4EB89A;
+  --color-success-light: #DCF2EA;
+  --color-success-dark:  #2E8A65;
+  --color-warning:       #D4A054;
+  --color-warning-light: #FDF0DC;
+  --color-warning-dark:  #9E7232;
+  --color-danger:        #E07E7E;
+  --color-danger-light:  #F9ECEC;
+  --color-danger-dark:   #A85555;
+
+  /* Surface */
+  --color-surface-page:     #F2F4FA;
+  --color-surface-card:     #FFFFFF;
+  --color-surface-input:    #F8F9FD;
+  --color-surface-disabled: #F4F5FB;
+  --color-surface-hover:    #F8F9FD;
+  --color-surface-thead:    #F8F9FC;
+
+  /* Border */
+  --color-border:       #E4E7F2;
+  --color-border-light: #EEF0F8;
+  --color-border-row:   #F4F5FB;
+
+  /* Text */
+  --color-content-primary:   #1E1E2E;
+  --color-content-body:      #2D2D3A;
+  --color-content-secondary: #8A8EA8;
+  --color-content-muted:     #A0A4BE;
+  --color-content-hint:      #B8BCCE;
+}
+
 :root {
-  --background: #f9fafb;
-  --foreground: #111827;
+  --background: #F2F4FA;
+  --foreground: #1E1E2E;
 }
 
 body {

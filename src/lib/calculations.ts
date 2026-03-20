@@ -76,15 +76,15 @@ export function formatQm(value: number | null): string {
   return `${value.toFixed(0)} m²`;
 }
 
-export function getEurProQmColor(eurProQm: number | null): string {
-  if (eurProQm === null) return 'text-gray-400';
-  if (eurProQm < 2500) return 'text-teal-700 bg-teal-50';
-  if (eurProQm <= 2700) return 'text-amber-700 bg-amber-50';
-  return 'text-red-700 bg-red-50';
+export function getEurProQmColor(eurProQm: number | null): { color: string } {
+  if (eurProQm === null) return { color: 'text-content-muted' };
+  if (eurProQm < 2500) return { color: 'text-success' };
+  if (eurProQm <= 2700) return { color: 'text-warning' };
+  return { color: 'text-danger' };
 }
 
 export function getCfColor(cf: number | null): string {
-  if (cf === null) return 'text-gray-400';
-  if (cf >= 0) return 'text-teal-700';
-  return 'text-red-600';
+  if (cf === null) return 'text-content-muted';
+  if (cf >= 0) return 'text-success-dark';
+  return 'text-danger';
 }

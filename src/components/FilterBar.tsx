@@ -36,28 +36,29 @@ const SORT_OPTIONS: { value: SortField; label: string }[] = [
 ];
 
 const selectClass =
-  'text-xs border border-gray-200 rounded px-2 py-1.5 text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-purple-400';
+  'text-xs border border-border rounded-lg px-2.5 py-1.5 text-content-body bg-surface-card focus:outline-none focus:border-brand-primary-mid';
 
 export default function FilterBar({ stadtteile, filters, onChange }: FilterBarProps) {
   const set = (patch: Partial<FilterState>) => onChange({ ...filters, ...patch });
 
   return (
-    <div className="bg-white border border-gray-100 rounded-lg px-4 py-3 mb-6 shadow-sm">
-      <div className="flex flex-wrap gap-x-6 gap-y-3 items-center">
-        {/* Status-Buttons */}
+    <div className="bg-surface-card border border-border rounded-xl px-4 py-3 mb-5">
+      <div className="flex flex-wrap gap-x-5 gap-y-3 items-center">
+
+        {/* Status-Chips */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+          <span className="text-[11px] font-medium text-content-muted uppercase tracking-wide whitespace-nowrap">
             Status
           </span>
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             {STATUS_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => set({ status: opt.value })}
-                className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                className={`px-3 py-[5px] rounded-full text-[12px] font-medium border transition-colors ${
                   filters.status === opt.value
-                    ? 'bg-purple-600 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-brand-primary-lt text-brand-primary border-brand-primary-lt'
+                    : 'bg-surface-page text-content-secondary border-border hover:bg-brand-primary-lt hover:text-brand-primary hover:border-brand-primary-lt'
                 }`}
               >
                 {opt.label}
@@ -69,7 +70,7 @@ export default function FilterBar({ stadtteile, filters, onChange }: FilterBarPr
         {/* Stadtteil */}
         {stadtteile.length > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+            <span className="text-[11px] font-medium text-content-muted uppercase tracking-wide whitespace-nowrap">
               Stadtteil
             </span>
             <select
@@ -87,7 +88,7 @@ export default function FilterBar({ stadtteile, filters, onChange }: FilterBarPr
 
         {/* Max €/m² */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+          <span className="text-[11px] font-medium text-content-muted uppercase tracking-wide whitespace-nowrap">
             Max €/m²
           </span>
           <input
@@ -101,7 +102,7 @@ export default function FilterBar({ stadtteile, filters, onChange }: FilterBarPr
 
         {/* Min Rendite */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+          <span className="text-[11px] font-medium text-content-muted uppercase tracking-wide whitespace-nowrap">
             Min Rendite %
           </span>
           <input
@@ -116,7 +117,7 @@ export default function FilterBar({ stadtteile, filters, onChange }: FilterBarPr
 
         {/* Sortierung */}
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide whitespace-nowrap">
+          <span className="text-[11px] font-medium text-content-muted uppercase tracking-wide whitespace-nowrap">
             Sortierung
           </span>
           <select
@@ -130,12 +131,13 @@ export default function FilterBar({ stadtteile, filters, onChange }: FilterBarPr
           </select>
           <button
             onClick={() => set({ sortDir: filters.sortDir === 'asc' ? 'desc' : 'asc' })}
-            className="px-2 py-1.5 text-xs border border-gray-200 rounded bg-white text-gray-600 hover:bg-gray-50"
+            className="px-2.5 py-1.5 text-xs border border-border rounded-lg bg-surface-card text-content-secondary hover:bg-surface-hover"
             title={filters.sortDir === 'asc' ? 'Aufsteigend' : 'Absteigend'}
           >
             {filters.sortDir === 'asc' ? '↑' : '↓'}
           </button>
         </div>
+
       </div>
     </div>
   );

@@ -32,44 +32,42 @@ export default function StatsCards({ properties }: StatsCardsProps) {
       label: 'Objekte gesamt',
       value: active.length.toString(),
       sub: `${previews.length} Vorschau · ${analyzed.length} Analysiert`,
-      color: 'border-purple-200',
-      valueColor: 'text-purple-700',
+      valueClass: 'text-brand-primary',
     },
     {
       label: 'Ø €/m²',
       value: formatEur(avgEurQm),
       sub: `aus ${withEurQm.length} Objekten`,
-      color: 'border-gray-200',
-      valueColor: 'text-gray-800',
+      valueClass: 'text-content-primary',
     },
     {
       label: 'Ø Bruttorendite (Ist)',
       value: formatProzent(avgRendite),
       sub: `aus ${withRendite.length} Objekten`,
-      color: 'border-gray-200',
-      valueColor: avgRendite && avgRendite >= 0.04 ? 'text-teal-700' : 'text-gray-800',
+      valueClass: avgRendite && avgRendite >= 0.04 ? 'text-success-dark' : 'text-content-primary',
     },
     {
       label: 'Bester CF (4% AfA)',
       value: formatEur(bestCf),
       sub: 'nach Steuer, monatlich',
-      color: 'border-gray-200',
-      valueColor: bestCf !== null && bestCf >= 0 ? 'text-teal-700' : 'text-red-600',
+      valueClass: bestCf !== null && bestCf >= 0 ? 'text-success-dark' : 'text-danger',
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
       {cards.map((card) => (
         <div
           key={card.label}
-          className={`bg-white rounded-lg border-2 ${card.color} p-4 shadow-sm`}
+          className="bg-surface-card rounded-[14px] border border-border p-4"
         >
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          <p className="text-[11px] font-medium text-content-muted uppercase tracking-wide">
             {card.label}
           </p>
-          <p className={`mt-1 text-2xl font-bold ${card.valueColor}`}>{card.value}</p>
-          <p className="mt-0.5 text-xs text-gray-400">{card.sub}</p>
+          <p className={`mt-2 text-[26px] font-bold leading-none tabular-nums ${card.valueClass}`}>
+            {card.value}
+          </p>
+          <p className="mt-1.5 text-[12px] text-content-muted">{card.sub}</p>
         </div>
       ))}
     </div>
