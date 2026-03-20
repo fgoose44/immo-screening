@@ -11,7 +11,7 @@ interface EnrichFormProps {
 function FieldGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-[12px] font-medium text-content-muted mb-1">{label}</label>
+      <label className="block text-[12px] font-medium text-[#6A6E88] mb-1">{label}</label>
       {children}
     </div>
   );

@@ -8,7 +8,7 @@ interface KennzahlenPanelProps {
 function Row({ label, value, className = '' }: { label: string; value: React.ReactNode; className?: string }) {
   return (
     <div className="flex justify-between items-center py-2.5">
-      <span className="text-[12px] text-content-muted">{label}</span>
+      <span className="text-[12px] text-[#5A5E78]">{label}</span>
       <span className={`text-[13px] font-medium tabular-nums ${className}`}>{value}</span>
     </div>
   );
@@ -27,7 +27,7 @@ export default function KennzahlenPanel({ property: p }: KennzahlenPanelProps) {
 
       {/* Sektion 1: Kaufpreis-Analyse */}
       <div className="px-4 border-b border-border-light">
-        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-content-muted pt-3 pb-0.5">
+        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#6A6E88] pt-3 pb-0.5">
           Kaufpreis-Analyse
         </p>
         <Row
@@ -52,7 +52,7 @@ export default function KennzahlenPanel({ property: p }: KennzahlenPanelProps) {
 
       {/* Sektion 2: AfA-Potenzial */}
       <div className="px-4 border-b border-border-light">
-        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-content-muted pt-3 pb-0.5">
+        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#6A6E88] pt-3 pb-0.5">
           AfA-Potenzial / Monat
         </p>
         <Row
@@ -69,7 +69,7 @@ export default function KennzahlenPanel({ property: p }: KennzahlenPanelProps) {
 
       {/* Sektion 3: Cashflow */}
       <div className="px-4 pb-4">
-        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-content-muted pt-3 pb-0.5">
+        <p className="text-[11px] font-medium uppercase tracking-[0.05em] text-[#6A6E88] pt-3 pb-0.5">
           Cashflow / Monat
         </p>
         <Row
@@ -89,8 +89,8 @@ export default function KennzahlenPanel({ property: p }: KennzahlenPanelProps) {
         />
 
         {/* Annahmen-Note */}
-        <div className="mt-3 px-3 py-2 bg-surface-hover rounded-[8px] text-[11px] text-content-hint space-y-0.5">
-          <p className="font-medium text-content-muted mb-0.5">Annahmen</p>
+        <div className="mt-3 px-[12px] py-[10px] bg-[#EEF0F8] rounded-[8px] text-[12px] text-[#6A6E88] space-y-0.5">
+          <p className="font-medium mb-0.5">Annahmen</p>
           <p>Finanzierung: 100% · tilgungsfrei · 6% Zins</p>
           <p>Hausgeld: 1,50 €/m² · Steuersatz: 42%</p>
           <p>Gebäudeanteil AfA: 80% des Kaufpreises</p>

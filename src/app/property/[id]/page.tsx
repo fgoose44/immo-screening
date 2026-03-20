@@ -51,7 +51,7 @@ export default async function PropertyPage({
       </div>
 
       {/* Titel-Row */}
-      <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-[4px]">
         <h1 className="text-[24px] font-bold text-content-primary tracking-[-0.3px]">
           {property.title ?? property.address ?? 'Ohne Titel'}
         </h1>
@@ -68,7 +68,7 @@ export default async function PropertyPage({
       </div>
 
       {/* Meta-Row */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-5">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-5 mt-[4px]">
         <div className="flex items-center gap-1.5 text-[12px] text-content-muted">
           {property.wohnflaeche_qm !== null && <span>{formatQm(property.wohnflaeche_qm)}</span>}
           {property.zimmer !== null && <><span className="opacity-40">·</span><span>{property.zimmer} Zi.</span></>}
