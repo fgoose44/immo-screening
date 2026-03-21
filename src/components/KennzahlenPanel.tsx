@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import type { Property } from '@/lib/types';
 import { formatEur, formatProzent, getCfColor, getEurProQmColor } from '@/lib/calculations';
 
@@ -15,6 +18,8 @@ function Row({ label, value, className = '' }: { label: string; value: React.Rea
 }
 
 export default function KennzahlenPanel({ property: p }: KennzahlenPanelProps) {
+  const [showAssumptions, setShowAssumptions] = useState(false);
+
   const eurQmColor = p.eur_pro_qm !== null
     ? getEurProQmColor(p.eur_pro_qm).color
     : 'text-content-muted';
@@ -88,13 +93,54 @@ export default function KennzahlenPanel({ property: p }: KennzahlenPanelProps) {
           className={`font-semibold ${getCfColor(p.cf_nach_steuer_4pct)}`}
         />
 
-        {/* Annahmen-Note */}
-        <div className="mt-3 px-[12px] py-[10px] bg-[#EEF0F8] rounded-[8px] text-[12px] text-[#6A6E88] space-y-0.5">
-          <p className="font-medium mb-0.5">Annahmen</p>
-          <p>Finanzierung: 100% · tilgungsfrei · 6% Zins</p>
-          <p>Hausgeld: 1,50 €/m² · Steuersatz: 42%</p>
-          <p>Gebäudeanteil AfA: 80% des Kaufpreises</p>
-          <p>Steuerlicher Zins: 4% p.a.</p>
+        {/* Annahmen-Toggle */}
+        <div style={{ borderTop: '0.5px solid #EEF0F8', marginTop: '12px' }}>
+          <button
+            onClick={() => setShowAssumptions((v) => !v)}
+            className="flex items-center gap-1.5 w-full pt-3"
+            style={{ fontSize: '11px', color: '#A0A4BE', cursor: 'pointer', background: 'none', border: 'none', textAlign: 'left' }}
+          >
+            {/* Info-Circle Icon */}
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: '#A0A4BE' }}>
+              <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M8 7v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+              <circle cx="8" cy="5" r="0.7" fill="currentColor" />
+            </svg>
+            Berechnungsannahmen {showAssumptions ? 'ausblenden' : 'anzeigen'}
+            <svg
+              width="10"
+              height="10"
+              viewBox="0 0 10 10"
+              fill="none"
+              style={{
+                marginLeft: 'auto',
+                transform: showAssumptions ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.15s ease',
+                flexShrink: 0,
+              }}
+            >
+              <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          {showAssumptions && (
+            <div
+              style={{
+                marginTop: '8px',
+                padding: '10px 12px',
+                background: '#F8F9FD',
+                borderRadius: '8px',
+                fontSize: '12px',
+                color: '#6A6E88',
+              }}
+              className="space-y-0.5"
+            >
+              <p>Finanzierung: 100% · 4% Zins + 2% Tilgung</p>
+              <p>Hausgeld: 1,50 €/m² · Steuersatz: 42%</p>
+              <p>Gebäudeanteil AfA: 80% des Kaufpreises</p>
+              <p>Steuerlicher Zins: 4% p.a.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

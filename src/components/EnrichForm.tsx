@@ -24,8 +24,6 @@ const inputDisabled = `${inputBase} border-border-light bg-surface-disabled text
 export default function EnrichForm({ property: p }: EnrichFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
-  const [skipping, setSkipping] = useState(false);
-  const [selling, setSelling] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -78,32 +76,6 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
       setError(err instanceof Error ? err.message : 'Fehler beim Speichern');
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleSell = async () => {
-    if (!confirm('Dieses Objekt als verkauft markieren? Der Status wird auf "Verkauft" gesetzt.')) return;
-    setSelling(true);
-    try {
-      const res = await fetch(`/api/properties/${p.id}/sell`, { method: 'POST' });
-      if (!res.ok) throw new Error('Aktualisierung fehlgeschlagen');
-      router.push('/');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler');
-      setSelling(false);
-    }
-  };
-
-  const handleSkip = async () => {
-    if (!confirm('Dieses Objekt überspringen?')) return;
-    setSkipping(true);
-    try {
-      const res = await fetch(`/api/properties/${p.id}/skip`, { method: 'POST' });
-      if (!res.ok) throw new Error('Skip fehlgeschlagen');
-      router.push('/');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Fehler');
-      setSkipping(false);
     }
   };
 
@@ -244,25 +216,10 @@ export default function EnrichForm({ property: p }: EnrichFormProps) {
       <div className="flex gap-3 pt-2">
         <button
           onClick={handleSave}
-          disabled={saving || skipping || selling}
+          disabled={saving}
           className="flex-1 py-2 bg-brand-primary hover:bg-brand-primary-dark disabled:opacity-60 text-white text-[13px] font-medium rounded-[8px] transition-colors"
         >
           {saving ? 'Speichern…' : 'Speichern & Anreichern'}
-        </button>
-        <button
-          onClick={handleSkip}
-          disabled={saving || skipping || selling}
-          className="px-4 py-2 bg-transparent border border-border text-content-secondary hover:text-content-body text-[13px] rounded-[8px] transition-colors disabled:opacity-60"
-        >
-          {skipping ? '…' : 'Überspringen'}
-        </button>
-        <button
-          onClick={handleSell}
-          disabled={saving || skipping || selling}
-          className="px-4 py-2 bg-transparent border border-[#F2C4C4] text-danger hover:text-danger-dark text-[13px] rounded-[8px] transition-colors disabled:opacity-60"
-          title="Objekt als verkauft markieren"
-        >
-          {selling ? '…' : '✓ Verkauft'}
         </button>
       </div>
       <p className="text-[12px] text-content-hint">* Ist-Miete wird für Rendite- und Cashflow-Berechnung benötigt</p>
