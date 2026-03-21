@@ -90,11 +90,26 @@ export default function Dashboard() {
   ).sort();
 
   // Gruppen aus gefilterter Liste
-  const topProps = sorted.filter((p) => p.status === 'preview' || p.status === 'enriched');
-  const analyzedProps = sorted.filter((p) => p.status === 'analyzed');
   const skippedProps = sorted.filter((p) => p.status === 'skipped');
   const soldProps = sorted.filter((p) => p.status === 'sold');
   const showSingleGroup = filters.status !== 'all';
+
+  // Sektion-spezifische Standard-Sortierung (greift nur wenn kein aktiver User-Sort)
+  const isDefaultSort = filters.sortField === 'created_at' && filters.sortDir === 'desc';
+
+  const previewFiltered = sorted.filter((p) => p.status === 'preview' || p.status === 'enriched');
+  const analyzedFiltered = sorted.filter((p) => p.status === 'analyzed');
+
+  // Analysiert: nach Rendite absteigend; Vorschau: nach €/m² aufsteigend
+  const analyzedProps = isDefaultSort
+    ? [...analyzedFiltered].sort((a, b) => (b.rendite_ist ?? -1) - (a.rendite_ist ?? -1))
+    : analyzedFiltered;
+  const previewProps = isDefaultSort
+    ? [...previewFiltered].sort((a, b) => (a.eur_pro_qm ?? 9_999_999) - (b.eur_pro_qm ?? 9_999_999))
+    : previewFiltered;
+
+  const sortHintAnalyzed = isDefaultSort ? '· nach Rendite ↓' : '';
+  const sortHintPreview  = isDefaultSort ? '· nach €/m² ↑'   : '';
 
   if (loading && properties.length === 0) {
     return (
@@ -164,40 +179,52 @@ export default function Dashboard() {
         <PropertyTable
           properties={sorted}
           title={
-            filters.status === 'preview' ? 'Vorschau' :
+            filters.status === 'preview'  ? 'Vorschau'     :
             filters.status === 'enriched' ? 'Angereichert' :
-            filters.status === 'analyzed' ? 'Analysiert' :
-            filters.status === 'sold' ? 'Verkauft' : 'Übersprungen'
+            filters.status === 'analyzed' ? 'Analysiert'   :
+            filters.status === 'sold'     ? 'Verkauft'     : 'Übersprungen'
           }
           emptyMessage="Keine Objekte gefunden."
         />
       ) : (
         <>
-          <PropertyTable
-            properties={topProps}
-            title="Vorschau & Angereichert"
-            emptyMessage="Keine Objekte in dieser Kategorie."
-          />
+          {/* ── 1. Analysiert (primärer Arbeitsgegenstand) ── */}
           <PropertyTable
             properties={analyzedProps}
             title="Analysiert"
             emptyMessage="Noch keine analysierten Objekte."
+            collapsible
+            defaultOpen
+            sortHint={sortHintAnalyzed}
           />
+
+          {/* ── 2. Vorschau & Angereichert ── */}
+          <PropertyTable
+            properties={previewProps}
+            title="Vorschau & Angereichert"
+            emptyMessage="Keine Objekte in dieser Kategorie."
+            collapsible
+            defaultOpen={false}
+            sortHint={sortHintPreview}
+          />
+
+          {/* ── Übersprungen & Verkauft (kollabiert) ── */}
           {skippedProps.length > 0 && (
-            <details className="mt-2">
-              <summary className="text-[13px] text-content-muted cursor-pointer hover:text-content-secondary mb-3 select-none">
-                Übersprungene Objekte ({skippedProps.length})
-              </summary>
-              <PropertyTable properties={skippedProps} title="Übersprungen" />
-            </details>
+            <PropertyTable
+              properties={skippedProps}
+              title="Übersprungen"
+              collapsible
+              defaultOpen={false}
+            />
           )}
           {soldProps.length > 0 && (
-            <details className="mt-2">
-              <summary className="text-[13px] text-content-muted cursor-pointer hover:text-content-secondary mb-3 select-none">
-                Verkaufte Objekte ({soldProps.length})
-              </summary>
-              <PropertyTable properties={soldProps} title="Verkauft" dimmed />
-            </details>
+            <PropertyTable
+              properties={soldProps}
+              title="Verkauft"
+              collapsible
+              defaultOpen={false}
+              dimmed
+            />
           )}
         </>
       )}
