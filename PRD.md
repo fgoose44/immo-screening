@@ -3,7 +3,7 @@
 **Version:** 1.3 · P6 Design System & UI-Optimierung
 **Datum:** März 2026
 **Autor:** Fabian
-**Status:** Live — Phasen 1–5 abgeschlossen, P6 in Arbeit
+**Status:** Live — Phasen 1–6 abgeschlossen ✅
 **Projektkürzel:** immo-screening
 
 ---
@@ -128,7 +128,7 @@ Alle Berechnungen basieren auf diesen fest codierten, aber konfigurierbaren Anna
 | P3 | E-Mail-Polling | Vercel Cron (täglich 9 Uhr), GMX IMAP-Verbindung, ImmoScout-Alert-Parser, Auto-Skipping >2.700 €/m² | ✅ Abgeschlossen |
 | P4 | Chrome Extension | Manifest V3, DOM-Parser für ImmoScout-Exposé-Seiten, `/api/enrich` Endpoint, URL-Matching, Auto-Analyse beim Import | ✅ Abgeschlossen |
 | P5 | Claude API Integration | `/api/analyze` Route, System-Prompt, JSON-Antwort-Parser, AI-Felder in DB, automatisch nach Extension-Import | ✅ Abgeschlossen |
-| P6 | Feinschliff | PDF-Export ✅ · "Hinzugefügt am"-Datum ✅ · "Verkauft markieren"-Funktion ✅ · Online-Dauer-Anzeige ✅ · Stadtteil-Bug Fix ✅ · Mobile Responsive ⏳ · Dark Mode ⏳ · Batch-Aktionen ⏳ | 🔄 In Arbeit |
+| P6 | Feinschliff & Design | PDF-Export ✅ · Hinzugefügt am ✅ · Verkauft markieren ✅ · Online-Dauer ✅ · Stadtteil-Bug ✅ · Design System ✅ · Dashboard UI-Optimierung ✅ · Detail Header-Card ✅ · KI-Bewertungs-Card ✅ · Batch-Aktionen ✅ · Mobile Responsive — (bewusst skipped) · Dark Mode — (bewusst skipped) | ✅ Abgeschlossen |
 
 ---
 
@@ -295,8 +295,7 @@ Zentrale Tabelle. Alle berechneten Felder (`eur_pro_qm`, `rendite_ist`, `afa_*`,
 ## 9. Offene Punkte (P6)
 
 ### Noch offen
-- Mobile-responsive Design
-- Dark Mode (optional, niedrige Priorität)
+- Keine — P6 abgeschlossen. Mobile Responsive und Dark Mode wurden bewusst als nicht prioritär eingestuft und gestrichen.
 
 ### Abgeschlossen in P6
 - **PDF-Export:** ✅ Exposés aus Supabase Storage abrufbar
@@ -318,6 +317,8 @@ Zentrale Tabelle. Alle berechneten Felder (`eur_pro_qm`, `rendite_ist`, `afa_*`,
 - **Berechnungsannahmen:** 4% Zins, 2% Tilgung (nicht mehr tilgungsfrei, nicht mehr 6%)
 - **Chrome Extension Auto-Analyse:** Ja — KI-Analyse wird automatisch nach Import ausgelöst
 - **"Verkauft markieren" rückgängig:** Nicht vorgesehen — Aktion ist endgültig
+- **Mobile Responsive:** Bewusst gestrichen — Single-User Desktop-Tool, kein mobiler Anwendungsfall
+- **Dark Mode:** Bewusst gestrichen — niedrige Priorität, kein konkreter Nutzerbedarf
 
 ### Bekannte Einschränkungen
 - ImmoScout-DOM-Struktur kann sich ändern → Chrome Extension muss ggf. angepasst werden
@@ -355,3 +356,4 @@ immo-screening/
 | 1.1 | März 2026 | Zinssatz 6% → 4%, Tilgung 0% → 2%, E-Mail-Polling täglich 9 Uhr (statt alle 5 Min.), Chrome Extension löst Auto-Analyse aus, P2–P5 als abgeschlossen markiert, PDF-Export in P6 als ✅ markiert |
 | 1.2 | März 2026 | P6 UI-Iteration: "Hinzugefügt am"-Datum in Dashboard-Tabelle, neuer Status `sold` mit `sold_at`-Feld, "Als verkauft markieren"-Button in Detailansicht, Online-Dauer-Anzeige für verkaufte Objekte, Fix Stadtteil-Bug nach KI-Analyse, neuer API-Endpoint `POST /api/properties/[id]/sell`, User Stories ergänzt |
 | 1.3 | März 2026 | Design System (Pastel, Recurra-Ästhetik, design-system.md), Dashboard UI-Optimierung (Collapsible Sections, Relevanz-Sortierung, Pagination, kompakte Zeilen), Detail-Ansicht Header-Card, ausklappbare Annahmen, Claude Code Setup (Memory MCP, Context7, tasks/, CLAUDE.md-Qualitätsregeln), Batch-Aktionen (Multi-Select, Überspringen, Verkauft) |
+| 1.4 | März 2026 | P6 abgeschlossen — KI-Bewertungs-Card ✅, Batch-Aktionen ✅, Mobile/Dark Mode bewusst gestrichen, Status auf "alle Phasen abgeschlossen" gesetzt |
