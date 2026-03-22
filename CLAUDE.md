@@ -325,12 +325,13 @@ Antworte im folgenden JSON-Format:
 
 - **Framework**: Tailwind CSS, keine extra UI-Library nötig
 - **Stil**: Clean, minimalistisch, professionell. Kein verspieltes Design.
-- **Farben**: 
-  - Primary/Accent: Purple (#534AB7)
-  - Success/Positive: Teal (#1D9E75) 
-  - Warning: Amber (#EF9F27)
-  - Danger/Negative: Red (#E24B4A)
+- **Farben**:
+  - Primary/Accent: Purple (#7A74C2)
+  - Success/Positive: Teal (#4EB89A)
+  - Warning: Amber (#D4A054)
+  - Danger/Negative: Red Pastel (#E07E7E)
   - Backgrounds: White + sehr helles Grau für Cards
+  - Vollständiges Design System: siehe design-system.md
 - **Status-Badges**:
   - Vorschau: Amber Background, dunkler Amber-Text
   - Analysiert: Grüner Background, dunkler Grün-Text
@@ -341,6 +342,18 @@ Antworte im folgenden JSON-Format:
   - Über 2.700: Rot (sollte normalerweise nicht vorkommen wegen Pre-Filter)
 - **Typografie**: System-Font-Stack (font-sans in Tailwind)
 - **Layout**: Responsive, aber primär für Desktop optimiert
+
+### Hinweis für frontend-design Skill
+Das installierte frontend-design Plugin gilt als Basis.
+Overrides für dieses Projekt:
+- Primary/Accent: #7A74C2 (Pastel-Purple)
+- Success: #4EB89A (Teal)
+- Warning: #D4A054 (Amber)
+- Danger: #E07E7E (Red Pastel)
+- Vollständiges Design System: siehe design-system.md
+- Font: System-Font-Stack (font-sans), keine dekorativen Display-Fonts
+- Stil: Clean und professionell — kein Brutalism, kein Maximalism
+- Animationen: Minimal, funktional — keine Show-Effekte
 
 ## Berechnungs-Annahmen (fest codiert, aber konfigurierbar)
 
