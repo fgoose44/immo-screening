@@ -143,6 +143,7 @@ Alle Berechnungen basieren auf diesen fest codierten, aber konfigurierbaren Anna
 - Sektions-Reihenfolge: Analysiert oben, Vorschau unten
   (Analysierte Objekte sind primärer Arbeitsgegenstand)
 - Pagination: max. 10 Objekte pro Sektion, Pagination-Bar mit Seitenanzeige
+- Batch-Aktionen: Checkboxen pro Zeile + "Alle auswählen" im Table-Header. Aktions-Bar erscheint bei ≥1 Auswahl (lila Hintergrund #EEEDF9). Verfügbare Aktionen: "Überspringen" und "Als verkauft markieren". Bestätigungsdialog vor "Als verkauft markieren". Ausgewählte Zeilen werden leicht lila eingefärbt (#F5F4FD).
 - Spalten: Status-Badge, Objekt (Titel + Meta), Stadtteil, Kaufpreis, €/m² (farbig), Rendite Ist, CF/Mon. (4% AfA), Datum (TT.MM.), Details-Link
 - Datum-Format in Tabelle: TT.MM. (ohne Jahr)
 - Filter: Status-Chips, Stadtteil-Dropdown, Sortierung
@@ -296,7 +297,6 @@ Zentrale Tabelle. Alle berechneten Felder (`eur_pro_qm`, `rendite_ist`, `afa_*`,
 ### Noch offen
 - Mobile-responsive Design
 - Dark Mode (optional, niedrige Priorität)
-- Batch-Aktionen (mehrere Properties gleichzeitig überspringen)
 
 ### Abgeschlossen in P6
 - **PDF-Export:** ✅ Exposés aus Supabase Storage abrufbar
@@ -309,6 +309,7 @@ Zentrale Tabelle. Alle berechneten Felder (`eur_pro_qm`, `rendite_ist`, `afa_*`,
 - **Detail-Ansicht Header-Card:** ✅ Titel, Meta, Preis, Buttons als einheitliche Card zusammengefasst
 - **Ausklappbare Berechnungsannahmen:** ✅ Standard zugeklappt, Toggle "Berechnungsannahmen anzeigen"
 - **Claude Code Setup:** ✅ Memory MCP, Context7 MCP, tasks/lessons.md, tasks/todo.md, CLAUDE.md Qualitätsregeln
+- **Batch-Aktionen:** ✅ Multi-Select mit Checkboxen, Aktions-Bar, Überspringen und Als-verkauft-markieren für mehrere Objekte gleichzeitig
 - **KI-Bewertungs-Card:** ⏳ Prüfen ob als separate Card auf Detail-Seite implementiert
 
 ### Entschiedene Punkte (zur Dokumentation)
@@ -353,4 +354,4 @@ immo-screening/
 | 1.0 | März 2026 | Initial Release — Projektstart |
 | 1.1 | März 2026 | Zinssatz 6% → 4%, Tilgung 0% → 2%, E-Mail-Polling täglich 9 Uhr (statt alle 5 Min.), Chrome Extension löst Auto-Analyse aus, P2–P5 als abgeschlossen markiert, PDF-Export in P6 als ✅ markiert |
 | 1.2 | März 2026 | P6 UI-Iteration: "Hinzugefügt am"-Datum in Dashboard-Tabelle, neuer Status `sold` mit `sold_at`-Feld, "Als verkauft markieren"-Button in Detailansicht, Online-Dauer-Anzeige für verkaufte Objekte, Fix Stadtteil-Bug nach KI-Analyse, neuer API-Endpoint `POST /api/properties/[id]/sell`, User Stories ergänzt |
-| 1.3 | März 2026 | Design System (Pastel, Recurra-Ästhetik, design-system.md), Dashboard UI-Optimierung (Collapsible Sections, Relevanz-Sortierung, Pagination, kompakte Zeilen), Detail-Ansicht Header-Card, ausklappbare Annahmen, Claude Code Setup (Memory MCP, Context7, tasks/, CLAUDE.md-Qualitätsregeln) |
+| 1.3 | März 2026 | Design System (Pastel, Recurra-Ästhetik, design-system.md), Dashboard UI-Optimierung (Collapsible Sections, Relevanz-Sortierung, Pagination, kompakte Zeilen), Detail-Ansicht Header-Card, ausklappbare Annahmen, Claude Code Setup (Memory MCP, Context7, tasks/, CLAUDE.md-Qualitätsregeln), Batch-Aktionen (Multi-Select, Überspringen, Verkauft) |
