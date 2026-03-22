@@ -185,6 +185,7 @@ export default function Dashboard() {
             filters.status === 'sold'     ? 'Verkauft'     : 'Übersprungen'
           }
           emptyMessage="Keine Objekte gefunden."
+          onRefetch={fetchProperties}
         />
       ) : (
         <>
@@ -196,6 +197,7 @@ export default function Dashboard() {
             collapsible
             defaultOpen
             sortHint={sortHintAnalyzed}
+            onRefetch={fetchProperties}
           />
 
           {/* ── 2. Vorschau & Angereichert ── */}
@@ -206,6 +208,7 @@ export default function Dashboard() {
             collapsible
             defaultOpen={false}
             sortHint={sortHintPreview}
+            onRefetch={fetchProperties}
           />
 
           {/* ── Übersprungen & Verkauft (kollabiert) ── */}
@@ -215,6 +218,7 @@ export default function Dashboard() {
               title="Übersprungen"
               collapsible
               defaultOpen={false}
+              onRefetch={fetchProperties}
             />
           )}
           {soldProps.length > 0 && (
@@ -224,6 +228,7 @@ export default function Dashboard() {
               collapsible
               defaultOpen={false}
               dimmed
+              onRefetch={fetchProperties}
             />
           )}
         </>
