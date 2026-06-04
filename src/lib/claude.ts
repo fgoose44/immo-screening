@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { AiAnalysisResult } from './types';
 
-const SYSTEM_PROMPT = `Du bist ein Immobilien-Analyst spezialisiert auf den Leipziger Markt mit Fokus auf steueroptimierte Investments (Denkmalschutz / hohe AfA). Du erhältst Exposé-Texte von Eigentumswohnungen und extrahierst strukturierte Daten sowie eine qualitative Bewertung.
+const SYSTEM_PROMPT = `Du bist ein Immobilien-Analyst spezialisiert auf den deutschen Immobilienmarkt mit Fokus auf steueroptimierte Investments (Denkmalschutz / hohe AfA), insbesondere in Leipzig und Dresden. Du erhältst Exposé-Texte von Eigentumswohnungen und extrahierst strukturierte Daten sowie eine qualitative Bewertung.
 
 REGELN:
 - Extrahiere nur Daten, die explizit im Exposé stehen.
@@ -36,7 +36,7 @@ Antworte im folgenden JSON-Format:
   }
 }`;
 
-export async function analyzeExpose(exposeText: string): Promise<AiAnalysisResult> {
+export async function analyzeExpose(exposeText: string, city: string = 'Leipzig'): Promise<AiAnalysisResult> {
   const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
   });
@@ -48,7 +48,7 @@ export async function analyzeExpose(exposeText: string): Promise<AiAnalysisResul
     messages: [
       {
         role: 'user',
-        content: `Analysiere das folgende Immobilien-Exposé:\n\n${exposeText}`,
+        content: `Stadt: ${city}\n\nAnalysiere das folgende Immobilien-Exposé und beziehe deine Bewertung (Lage, Mietsteigerungspotenzial, Marktvergleich) auf den ${city}er Markt:\n\n${exposeText}`,
       },
     ],
   });

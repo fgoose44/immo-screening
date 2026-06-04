@@ -29,7 +29,7 @@ export async function runAnalysisAndSave(
   // Property mit allen befüllbaren Feldern laden
   const { data: property, error: fetchError } = await supabase
     .from('properties')
-    .select('id, expose_text, baujahr, ist_miete_eur, energieklasse, heizungsart, aufzug, balkon')
+    .select('id, city, expose_text, baujahr, ist_miete_eur, energieklasse, heizungsart, aufzug, balkon')
     .eq('id', propertyId)
     .single();
 
@@ -42,7 +42,7 @@ export async function runAnalysisAndSave(
   }
 
   // Claude API aufrufen
-  const result = await analyzeExpose(property.expose_text);
+  const result = await analyzeExpose(property.expose_text, property.city ?? 'Leipzig');
 
   // Nur diese Felder werden je geschrieben — niemals stadtteil, title, address
   // oder andere Basisdaten, die aus dem E-Mail-Parser / der Chrome Extension stammen.
