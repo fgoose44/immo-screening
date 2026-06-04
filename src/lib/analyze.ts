@@ -90,7 +90,10 @@ export async function runAnalysisAndSave(
     .update(updates)
     .eq('id', propertyId);
 
-  if (updateError) throw updateError;
+  if (updateError) {
+    console.error('[analyze] DB update fehlgeschlagen:', JSON.stringify(updateError));
+    throw new Error(`DB-Update fehlgeschlagen: ${updateError.message} (code: ${updateError.code}, details: ${updateError.details})`);
+  }
 
   const autoFilled = Object.keys(updates).filter(
     (k) => !k.startsWith('ai_') && k !== 'status'
