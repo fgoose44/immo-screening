@@ -84,7 +84,8 @@
       try {
         const data = JSON.parse(script.textContent);
         const obj = Array.isArray(data) ? data[0] : data;
-        if (obj && (obj['@type'] === 'Apartment' || obj['@type'] === 'House' || obj.offers)) {
+        // Breiter Match: jedes Objekt mit address oder offers akzeptieren
+        if (obj && (obj.address || obj.offers || obj.name)) {
           return {
             kaufpreis_eur: obj.offers?.price ? parseFloat(obj.offers.price) : null,
             title: obj.name || null,
@@ -342,9 +343,13 @@
   function extractAdresse() {
     const selectors = [
       '[data-testid="expose-address"]',
+      '[data-testid*="address"]',
       '[class*="address"] [class*="city"]',
       '[class*="Address"]',
+      '[class*="address"]',
       '.is24-ex-address',
+      '[class*="location"]',
+      '[class*="Location"]',
     ];
     return queryText(...selectors);
   }
@@ -374,10 +379,15 @@
   // ── Stadt ─────────────────────────────────────────────────────────────────
 
   function extractCity(address, addressLocality) {
-    // addressLocality aus JSON-LD ist die zuverlässigste Quelle
-    const src = addressLocality || address || '';
-    if (/dresden/i.test(src)) return 'Dresden';
-    if (/leipzig/i.test(src)) return 'Leipzig';
+    // 1. addressLocality aus JSON-LD (zuverlässigste Quelle)
+    // 2. DOM-Adressfeld
+    // 3. gesamter Seitentext als robuster Fallback
+    const sources = [addressLocality, address, document.body.innerText];
+    for (const src of sources) {
+      if (!src) continue;
+      if (/dresden/i.test(src)) return 'Dresden';
+      if (/leipzig/i.test(src)) return 'Leipzig';
+    }
     return 'Leipzig';
   }
 
@@ -390,12 +400,21 @@
     const kaufpreis = extractKaufpreis() || jsonLd.kaufpreis_eur;
     const flaeche = extractFlaeche();
     const address = extractAdresse() || jsonLd.address;
+    const city = extractCity(address, jsonLd.addressLocality);
+
+    // ── DEBUG: Stadt-Erkennung ────────────────────────────────────────────────
+    console.log('[ImmoScreener] jsonLd komplett:', jsonLd);
+    console.log('[ImmoScreener] jsonLd.addressLocality:', jsonLd.addressLocality);
+    console.log('[ImmoScreener] address (DOM):', extractAdresse());
+    console.log('[ImmoScreener] address (an extractCity übergeben):', address);
+    console.log('[ImmoScreener] city (Ergebnis):', city);
+    // ─────────────────────────────────────────────────────────────────────────
 
     return {
       immoscout_url: url,
       title: extractTitle() || jsonLd.title || document.title.split('|')[0].trim(),
       address,
-      city: extractCity(address, jsonLd.addressLocality),
+      city,
       kaufpreis_eur: kaufpreis,
       wohnflaeche_qm: flaeche,
       zimmer: extractZimmer(),
