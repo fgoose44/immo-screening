@@ -22,7 +22,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const searchParams = useSearchParams();
-  const cityFilter = (searchParams.get('city') as 'Leipzig' | 'Dresden') ?? 'all';
+  const cityFilter = (searchParams.get('city') as 'all' | 'Leipzig' | 'Dresden') ?? 'all';
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
