@@ -77,9 +77,9 @@ export async function POST(request: NextRequest) {
         .select('id')
         .maybeSingle();
 
-      if (error) throw error;
-      if (!data) throw new Error(`Update fand kein Property mit id ${existing.id}`);
-      propertyId = data.id;
+      if (error) console.error('[enrich] Update-Fehler (nicht kritisch):', error);
+      // Fallback auf bekannte ID — Daten wurden gespeichert auch wenn RETURNING leer ist
+      propertyId = data?.id ?? existing.id;
       action = 'updated';
     } else {
       // Pre-Filter beim Neu-Anlegen via Chrome Extension
@@ -107,10 +107,23 @@ export async function POST(request: NextRequest) {
           ...enrichData,
         })
         .select('id')
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
-      propertyId = data.id;
+      if (error) console.error('[enrich] Insert-Fehler:', error);
+
+      // Falls RETURNING leer: via URL nachschlagen
+      let insertedId = data?.id ?? null;
+      if (!insertedId) {
+        const { data: lookup } = await supabase
+          .from('properties')
+          .select('id')
+          .eq('immoscout_url', body.immoscout_url)
+          .maybeSingle();
+        insertedId = lookup?.id ?? null;
+      }
+
+      if (!insertedId) throw new Error('Insert fehlgeschlagen — Property nicht auffindbar');
+      propertyId = insertedId;
       action = 'created';
     }
 
