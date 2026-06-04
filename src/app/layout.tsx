@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import NavLinks from "@/components/NavLinks";
 
@@ -29,7 +30,9 @@ export default function RootLayout({
                 ImmoScout Screening
               </span>
               <span className="text-content-hint">|</span>
-              <NavLinks />
+              <Suspense>
+                <NavLinks />
+              </Suspense>
             </div>
 
             {/* Rechts: Avatar */}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import type { Property, PropertyStatus, SortField } from '@/lib/types';
 import StatsCards from './StatsCards';
 import PropertyTable from './PropertyTable';
@@ -20,7 +21,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-  const [cityFilter, setCityFilter] = useState<'all' | 'Leipzig' | 'Dresden'>('all');
+  const searchParams = useSearchParams();
+  const cityFilter = (searchParams.get('city') as 'Leipzig' | 'Dresden') ?? 'all';
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
@@ -42,6 +44,11 @@ export default function Dashboard() {
   useEffect(() => {
     fetchProperties();
   }, [fetchProperties]);
+
+  // Stadtteil-Filter zurücksetzen wenn Stadt wechselt
+  useEffect(() => {
+    setFilters((f) => ({ ...f, stadtteil: '' }));
+  }, [cityFilter]);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -150,25 +157,6 @@ export default function Dashboard() {
           <p className="mt-1 text-[13px] text-content-secondary">
             Eigentumswohnungen · AfA-optimiert · 4% Zins + 2% Tilgung
           </p>
-          <div className="flex gap-2 mt-3">
-            {(['all', 'Leipzig', 'Dresden'] as const).map((c) => (
-              <button
-                key={c}
-                onClick={() => {
-                  setCityFilter(c);
-                  setFilters((f) => ({ ...f, stadtteil: '' }));
-                }}
-                className={[
-                  'px-3.5 py-1 rounded-full text-[12px] border transition-colors',
-                  cityFilter === c
-                    ? 'bg-[#EEEDF9] text-[#7A74C2] border-[#C9C6EC] font-medium'
-                    : 'bg-[#F2F4FA] text-[#8A8EA8] border-[#E4E7F2]',
-                ].join(' ')}
-              >
-                {c === 'all' ? 'Alle' : c}
-              </button>
-            ))}
-          </div>
         </div>
         <div className="flex items-center gap-3">
           {syncMsg && (

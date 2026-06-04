@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 
 function GridIcon() {
   return (
@@ -14,18 +14,24 @@ function GridIcon() {
   );
 }
 
-function PersonIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="7" cy="4.5" r="2.5" fill="currentColor" />
-      <path d="M2 12c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export default function NavLinks() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const isDashboard = pathname === '/' || pathname.startsWith('/property');
+
+  const cityParam = searchParams.get('city') as 'Leipzig' | 'Dresden' | null;
+  const activeCity = cityParam ?? 'all';
+
+  function setCity(c: 'all' | 'Leipzig' | 'Dresden') {
+    const params = new URLSearchParams(searchParams.toString());
+    if (c === 'all') {
+      params.delete('city');
+    } else {
+      params.set('city', c);
+    }
+    router.push(`/?${params.toString()}`);
+  }
 
   return (
     <div className="flex items-center gap-1">
@@ -38,14 +44,27 @@ export default function NavLinks() {
         }`}
       >
         <GridIcon />
-        Dashboard
-      </Link>
-      <span
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] text-content-secondary cursor-default"
-      >
-        <PersonIcon />
         Objekte
-      </span>
+      </Link>
+
+      {/* Trennlinie */}
+      <span className="w-px h-4 bg-border mx-1" />
+
+      {/* Stadt-Filter-Chips */}
+      {(['all', 'Leipzig', 'Dresden'] as const).map((c) => (
+        <button
+          key={c}
+          onClick={() => setCity(c)}
+          className={[
+            'px-3 py-1 rounded-full text-[12px] border transition-colors',
+            activeCity === c
+              ? 'bg-[#EEEDF9] text-[#7A74C2] border-[#C9C6EC] font-medium'
+              : 'bg-[#F2F4FA] text-[#8A8EA8] border-[#E4E7F2] hover:border-[#C9C6EC] hover:text-[#7A74C2]',
+          ].join(' ')}
+        >
+          {c === 'all' ? 'Alle' : c}
+        </button>
+      ))}
     </div>
   );
 }
