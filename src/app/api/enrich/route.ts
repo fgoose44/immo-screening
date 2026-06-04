@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       .from('properties')
       .select('id, status')
       .eq('immoscout_url', body.immoscout_url)
-      .single();
+      .maybeSingle();
 
     const enrichData = {
       baujahr: body.baujahr ?? null,
@@ -75,9 +75,10 @@ export async function POST(request: NextRequest) {
         .update({ ...enrichData, status: newStatus })
         .eq('id', existing.id)
         .select('id')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) throw new Error(`Update fand kein Property mit id ${existing.id}`);
       propertyId = data.id;
       action = 'updated';
     } else {
