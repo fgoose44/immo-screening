@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [cityFilter, setCityFilter] = useState<'all' | 'Leipzig' | 'Dresden'>('all');
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
@@ -68,8 +69,13 @@ export default function Dashboard() {
     }
   };
 
+  // Stadt-Filter anwenden (Basis für alle nachgelagerten Berechnungen)
+  const cityFiltered = cityFilter === 'all'
+    ? properties
+    : properties.filter((p) => p.city === cityFilter);
+
   // Client-seitiges Filtern + Sortieren
-  const filtered = properties.filter((p) => {
+  const filtered = cityFiltered.filter((p) => {
     if (filters.status !== 'all' && p.status !== filters.status) return false;
     if (filters.stadtteil && p.stadtteil !== filters.stadtteil) return false;
     if (filters.maxEurQm && p.eur_pro_qm !== null && p.eur_pro_qm > parseFloat(filters.maxEurQm)) return false;
@@ -84,9 +90,9 @@ export default function Dashboard() {
     return filters.sortDir === 'asc' ? cmp : -cmp;
   });
 
-  // Stadtteile für Dropdown
+  // Stadtteile für Dropdown — nur aus aktuell gefilterter Stadt
   const stadtteile = Array.from(
-    new Set(properties.map((p) => p.stadtteil).filter(Boolean) as string[])
+    new Set(cityFiltered.map((p) => p.stadtteil).filter(Boolean) as string[])
   ).sort();
 
   // Gruppen aus gefilterter Liste
@@ -142,8 +148,27 @@ export default function Dashboard() {
         <div>
           <h1 className="text-[24px] font-bold text-content-primary tracking-tight">Immobilien-Screening</h1>
           <p className="mt-1 text-[13px] text-content-secondary">
-            Eigentumswohnungen Leipzig · AfA-optimiert · 4% Zins + 2% Tilgung
+            Eigentumswohnungen · AfA-optimiert · 4% Zins + 2% Tilgung
           </p>
+          <div className="flex gap-2 mt-3">
+            {(['all', 'Leipzig', 'Dresden'] as const).map((c) => (
+              <button
+                key={c}
+                onClick={() => {
+                  setCityFilter(c);
+                  setFilters((f) => ({ ...f, stadtteil: '' }));
+                }}
+                className={[
+                  'px-3.5 py-1 rounded-full text-[12px] border transition-colors',
+                  cityFilter === c
+                    ? 'bg-[#EEEDF9] text-[#7A74C2] border-[#C9C6EC] font-medium'
+                    : 'bg-[#F2F4FA] text-[#8A8EA8] border-[#E4E7F2]',
+                ].join(' ')}
+              >
+                {c === 'all' ? 'Alle' : c}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex items-center gap-3">
           {syncMsg && (
@@ -166,7 +191,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <StatsCards properties={properties} />
+      <StatsCards properties={cityFiltered} />
 
       <FilterBar
         stadtteile={stadtteile}
@@ -177,6 +202,7 @@ export default function Dashboard() {
       {/* Einzel-Status: alles in einer Tabelle */}
       {showSingleGroup ? (
         <PropertyTable
+          key={cityFilter}
           properties={sorted}
           title={
             filters.status === 'preview'  ? 'Vorschau'     :
@@ -191,6 +217,7 @@ export default function Dashboard() {
         <>
           {/* ── 1. Analysiert (primärer Arbeitsgegenstand) ── */}
           <PropertyTable
+            key={`analyzed-${cityFilter}`}
             properties={analyzedProps}
             title="Analysiert"
             emptyMessage="Noch keine analysierten Objekte."
@@ -202,6 +229,7 @@ export default function Dashboard() {
 
           {/* ── 2. Vorschau & Angereichert ── */}
           <PropertyTable
+            key={`preview-${cityFilter}`}
             properties={previewProps}
             title="Vorschau & Angereichert"
             emptyMessage="Keine Objekte in dieser Kategorie."
@@ -214,6 +242,7 @@ export default function Dashboard() {
           {/* ── Übersprungen & Verkauft (kollabiert) ── */}
           {skippedProps.length > 0 && (
             <PropertyTable
+              key={`skipped-${cityFilter}`}
               properties={skippedProps}
               title="Übersprungen"
               collapsible
@@ -223,6 +252,7 @@ export default function Dashboard() {
           )}
           {soldProps.length > 0 && (
             <PropertyTable
+              key={`sold-${cityFilter}`}
               properties={soldProps}
               title="Verkauft"
               collapsible

@@ -5,7 +5,8 @@ import type { ParsedMail } from 'mailparser';
 import { createServiceClient } from '@/lib/supabase';
 import { parseImmoScoutEmail } from '@/lib/email-parser';
 
-const PRE_FILTER_MAX_EUR_QM = 2700;
+import { CALC_ASSUMPTIONS } from '@/lib/calculations';
+
 // Beim allerersten Lauf: so weit zurückschauen
 const FIRST_RUN_LOOKBACK_DAYS = 7;
 
@@ -120,6 +121,12 @@ export async function GET(request: NextRequest) {
           const from = parsed.from?.text?.toLowerCase() ?? '';
           if (!from.includes('immobilienscout24.de')) continue;
 
+          // Stadt aus Betreff parsen
+          const subject = parsed.subject ?? '';
+          let city = 'Leipzig';
+          if (/dresden/i.test(subject)) city = 'Dresden';
+          else if (/leipzig/i.test(subject)) city = 'Leipzig';
+
           // HTML-Inhalt extrahieren
           const html = typeof parsed.html === 'string' ? parsed.html : (parsed.textAsHtml ?? '');
           if (!html) continue;
@@ -141,11 +148,12 @@ export async function GET(request: NextRequest) {
                 continue;
               }
 
-              // Pre-Filter: €/m² > 2.700 → als 'skipped' anlegen
+              // Pre-Filter: €/m² > stadtspezifischer Schwellenwert → als 'skipped' anlegen
+              const maxEurQm = CALC_ASSUMPTIONS.PRE_FILTER_MAX_EUR_QM[city] ?? 2700;
               let status: 'preview' | 'skipped' = 'preview';
               if (prop.kaufpreis_eur && prop.wohnflaeche_qm && prop.wohnflaeche_qm > 0) {
                 const eurQm = prop.kaufpreis_eur / prop.wohnflaeche_qm;
-                if (eurQm > PRE_FILTER_MAX_EUR_QM) {
+                if (eurQm > maxEurQm) {
                   status = 'skipped';
                   stats.properties_skipped_prefilter++;
                 }
@@ -154,7 +162,7 @@ export async function GET(request: NextRequest) {
               // Property anlegen
               const { error: insertError } = await supabase
                 .from('properties')
-                .insert({ ...prop, status });
+                .insert({ ...prop, status, city });
 
               if (insertError) throw insertError;
               stats.properties_created++;

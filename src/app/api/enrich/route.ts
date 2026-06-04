@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase';
 import { runAnalysisAndSave } from '@/lib/analyze';
+import { CALC_ASSUMPTIONS } from '@/lib/calculations';
 
 // CORS-Helper: erlaubt Anfragen von Chrome Extensions und der eigenen Domain
 function corsHeaders(origin: string | null) {
@@ -31,6 +32,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const supabase = createServiceClient();
+
+    const city: string = body.city ?? 'Leipzig';
 
     if (!body.immoscout_url) {
       return NextResponse.json(
@@ -78,11 +81,20 @@ export async function POST(request: NextRequest) {
       propertyId = data.id;
       action = 'updated';
     } else {
+      // Pre-Filter beim Neu-Anlegen via Chrome Extension
+      const maxEurQm = CALC_ASSUMPTIONS.PRE_FILTER_MAX_EUR_QM[city] ?? 2700;
+      let newStatus: 'enriched' | 'skipped' = 'enriched';
+      if (body.kaufpreis_eur && body.wohnflaeche_qm && body.wohnflaeche_qm > 0) {
+        const eurQm = body.kaufpreis_eur / body.wohnflaeche_qm;
+        if (eurQm > maxEurQm) newStatus = 'skipped';
+      }
+
       // Neues Objekt anlegen
       const { data, error } = await supabase
         .from('properties')
         .insert({
           immoscout_url: body.immoscout_url,
+          city,
           title: body.title ?? null,
           stadtteil: body.stadtteil ?? null,
           address: body.address ?? null,
@@ -90,7 +102,7 @@ export async function POST(request: NextRequest) {
           wohnflaeche_qm: body.wohnflaeche_qm ?? null,
           zimmer: body.zimmer ?? null,
           thumbnail_url: body.thumbnail_url ?? null,
-          status: 'enriched',
+          status: newStatus,
           ...enrichData,
         })
         .select('id')

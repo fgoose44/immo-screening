@@ -10,6 +10,7 @@ export interface Property {
   sold_at: string | null;
 
   // Basisdaten
+  city: string;
   title: string | null;
   stadtteil: string | null;
   address: string | null;

@@ -91,6 +91,7 @@
             address: obj.address
               ? [obj.address.streetAddress, obj.address.addressLocality].filter(Boolean).join(', ')
               : null,
+            addressLocality: obj.address?.addressLocality || null,
           };
         }
       } catch {}
@@ -370,6 +371,16 @@
     return bilder.length > 0 ? bilder[0] : null;
   }
 
+  // ── Stadt ─────────────────────────────────────────────────────────────────
+
+  function extractCity(address, addressLocality) {
+    // addressLocality aus JSON-LD ist die zuverlässigste Quelle
+    const src = addressLocality || address || '';
+    if (/dresden/i.test(src)) return 'Dresden';
+    if (/leipzig/i.test(src)) return 'Leipzig';
+    return 'Leipzig';
+  }
+
   // ── Hauptfunktion ─────────────────────────────────────────────────────────
 
   function extractAll() {
@@ -378,11 +389,13 @@
 
     const kaufpreis = extractKaufpreis() || jsonLd.kaufpreis_eur;
     const flaeche = extractFlaeche();
+    const address = extractAdresse() || jsonLd.address;
 
     return {
       immoscout_url: url,
       title: extractTitle() || jsonLd.title || document.title.split('|')[0].trim(),
-      address: extractAdresse() || jsonLd.address,
+      address,
+      city: extractCity(address, jsonLd.addressLocality),
       kaufpreis_eur: kaufpreis,
       wohnflaeche_qm: flaeche,
       zimmer: extractZimmer(),

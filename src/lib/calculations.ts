@@ -6,7 +6,7 @@ export const CALC_ASSUMPTIONS = {
   STEUERSATZ: 0.42,               // 42% Spitzensteuersatz
   AFA_KONSERVATIV: 0.02,         // 2% p.a.
   AFA_PROGRESSIV: 0.04,          // 4% p.a.
-  PRE_FILTER_MAX_EUR_QM: 2700,   // Max €/m² für automatische Aufnahme
+  PRE_FILTER_MAX_EUR_QM: { Leipzig: 2700, Dresden: 3000 } as Record<string, number>,
   // Nur der Zinsanteil ist steuerlich absetzbar (= FINANZIERUNG_ZINSSATZ, ohne Tilgung)
   ZINS_SATZ_STEUER: 0.04,        // 4% Zins für steuerliche Berechnung (= FINANZIERUNG_ZINSSATZ)
 } as const;
